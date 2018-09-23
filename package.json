@@ -2,7 +2,7 @@
     "name": "launch-wasm",   
     "version": "1.0.0",   
     "scripts": {    
-        "build": "cd go && env GOOS=js GOARCH=wasm go build -o ../server/build/main.wasm",
-        "serve": "http-server.cmd ./server"   
+        "build": "GOOS=js GOARCH=wasm go build -o server/build/main.wasm go/main.go",
+        "serve": "http-server ./server"   
     }
 }
