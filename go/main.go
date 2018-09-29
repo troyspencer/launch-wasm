@@ -8,7 +8,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"syscall/js"
@@ -178,7 +177,6 @@ func main() {
 	renderFrame = js.NewCallback(func(args []js.Value) {
 		now := args[0].Float()
 		tdiff := now - tmark
-		doc.Call("getElementById", "fps").Set("innerHTML", fmt.Sprintf("FPS: %.01f", 1000/tdiff))
 		tmark = now
 
 		// Pool window size to handle resize
