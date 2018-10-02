@@ -14,5 +14,15 @@
 			"GOOS":"js",
 		},
 		"go.installDependenciesWhenBuilding": false,
+		// Code action kinds to be run on save.
+		"saveAndRun": {
+			"commands": [
+				{
+					"match": ".go",
+					"cmd": "npm run build",
+					"silent": true
+				}
+			]
+		}
 	}
 }
