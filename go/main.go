@@ -38,7 +38,7 @@ func main() {
 
 	done := make(chan struct{}, 0)
 
-	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 9.8})
+	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
 	var verts []box2d.B2Vec2
 
 	keyUpEvt := js.NewCallback(func(args []js.Value) {
