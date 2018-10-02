@@ -138,7 +138,7 @@ func main() {
 	doc.Call("addEventListener", "keyup", keyUpEvt)
 	doc.Call("addEventListener", "mousedown", mouseDownEvt)
 
-	// Floor
+	// Boundaries
 	floor := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
 		Position: box2d.B2Vec2{X: 0, Y: height*worldScale - 20*worldScale},
@@ -147,6 +147,36 @@ func main() {
 	floorShape := &box2d.B2PolygonShape{}
 	floorShape.SetAsBox(width*worldScale, 20*worldScale)
 	ft := floor.CreateFixture(floorShape, 1)
+	ft.M_friction = 0.3
+
+	ceiling := world.CreateBody(&box2d.B2BodyDef{
+		Type:     box2d.B2BodyType.B2_kinematicBody,
+		Position: box2d.B2Vec2{X: 0, Y: 20 * worldScale},
+		Active:   true,
+	})
+	ceilingShape := &box2d.B2PolygonShape{}
+	ceilingShape.SetAsBox(width*worldScale, 20*worldScale)
+	ft = ceiling.CreateFixture(ceilingShape, 1)
+	ft.M_friction = 0.3
+
+	leftWall := world.CreateBody(&box2d.B2BodyDef{
+		Type:     box2d.B2BodyType.B2_kinematicBody,
+		Position: box2d.B2Vec2{X: 20 * worldScale, Y: 0},
+		Active:   true,
+	})
+	leftWallShape := &box2d.B2PolygonShape{}
+	leftWallShape.SetAsBox(20*worldScale, height*worldScale)
+	ft = leftWall.CreateFixture(leftWallShape, 1)
+	ft.M_friction = 0.3
+
+	rightWall := world.CreateBody(&box2d.B2BodyDef{
+		Type:     box2d.B2BodyType.B2_kinematicBody,
+		Position: box2d.B2Vec2{X: width*worldScale - 20*worldScale, Y: 0},
+		Active:   true,
+	})
+	rightWallShape := &box2d.B2PolygonShape{}
+	rightWallShape.SetAsBox(20*worldScale, height*worldScale)
+	ft = rightWall.CreateFixture(rightWallShape, 1)
 	ft.M_friction = 0.3
 
 	// Some Random falling balls
@@ -170,8 +200,8 @@ func main() {
 	var tmark float64
 
 	// overall style
-	ctx.Set("fillStyle", "rgba(100,150,100,0.4)")
-	ctx.Set("strokeStyle", "rgba(100,150,100,1)")
+	ctx.Set("fillStyle", "rgba(100,100,100,1)")
+	ctx.Set("strokeStyle", "rgba(100,100,100,1)")
 	ctx.Set("lineWidth", 2*worldScale)
 
 	renderFrame = js.NewCallback(func(args []js.Value) {
