@@ -3,6 +3,6 @@
     "version": "1.0.0",
     "scripts": {
         "build": "env GOOS=js GOARCH=wasm go build -o server/build/main.wasm go/main.go",
-        "serve": "http-server ./server"
+        "serve": "http-server ./server -c-1"
     }
 }
