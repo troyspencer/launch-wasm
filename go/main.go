@@ -41,6 +41,20 @@ func main() {
 	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
 	var verts []box2d.B2Vec2
 
+	// Player Ball
+	player := world.CreateBody(&box2d.B2BodyDef{
+		Type:         box2d.B2BodyType.B2_dynamicBody,
+		Position:     box2d.B2Vec2{X: 0.1 * width * worldScale, Y: 0.9 * height * worldScale},
+		Awake:        true,
+		Active:       true,
+		GravityScale: 1.0,
+	})
+	shape := box2d.NewB2CircleShape()
+	shape.M_radius = 15 * worldScale
+	ft := player.CreateFixture(shape, 1)
+	ft.M_friction = 1
+	ft.M_restitution = 0
+
 	keyUpEvt := js.NewCallback(func(args []js.Value) {
 		e := args[0]
 		if e.Get("which").Int() == 27 {
@@ -62,76 +76,17 @@ func main() {
 		}
 		mx := e.Get("clientX").Float() * worldScale
 		my := e.Get("clientY").Float() * worldScale
-		// Start shape
-		if verts == nil {
-			verts = []box2d.B2Vec2{box2d.B2Vec2{mx, my}}
-			return
-		}
-		dx := mx - verts[0].X
-		dy := my - verts[0].Y
-		d := math.Sqrt(dx*dx + dy*dy)
-		///////
-		// if clicked on the single spot we create a ball
-		if len(verts) == 1 && d < 10*worldScale {
-			obj1 := world.CreateBody(&box2d.B2BodyDef{
-				Type:         box2d.B2BodyType.B2_dynamicBody,
-				Position:     box2d.B2Vec2{X: mx, Y: my},
-				Awake:        true,
-				Active:       true,
-				GravityScale: 1.0,
-			})
-			shape := box2d.NewB2CircleShape()
-			shape.M_radius = (10 + rand.Float64()*10) * worldScale
-			ft := obj1.CreateFixture(shape, 1)
-			ft.M_friction = 0.3
-			ft.M_restitution = 0.7
-			verts = nil
-			return
-		}
-		if len(verts) > 2 && d < 10*worldScale || len(verts) == 8 {
 
-			// Seems box2d panics when we create a polygon counterclockwise most
-			// likely due to normals and centroids calculations so basically we
-			// recover from that panic and invert the polygon and try again
-			var center *box2d.B2Vec2
-			func() {
-				defer func() { recover() }()
-				lc := box2d.ComputeCentroid(verts, len(verts))
-				center = &lc
-			}()
-			if center == nil {
-				//vert inversion
-				verts2 := make([]box2d.B2Vec2, len(verts))
-				for i := range verts {
-					verts2[len(verts)-1-i] = verts[i]
-				}
-				verts = verts2
-				// Retry
-				lc := box2d.ComputeCentroid(verts, len(verts))
-				center = &lc
-			}
+		movementDx := mx - player.GetPosition().X
+		movementDy := my - player.GetPosition().Y
 
-			// translate -center
-			for i := range verts {
-				verts[i].X -= center.X
-				verts[i].Y -= center.Y
-			}
-			shape := box2d.NewB2PolygonShape()
-			shape.Set(verts, len(verts))
+		// create normalized movement vector from player to click location
+		movementVector := box2d.B2Vec2{X: movementDx, Y: movementDy}
+		movementVector.Normalize()
+		movementVector.OperatorScalarMulInplace(8)
 
-			obj := world.CreateBody(&box2d.B2BodyDef{
-				Type:         box2d.B2BodyType.B2_dynamicBody,
-				Position:     *center,
-				Awake:        true,
-				Active:       true,
-				GravityScale: 1.0,
-			})
-			fixture := obj.CreateFixture(shape, 10)
-			fixture.M_friction = 0.3
-			verts = nil
-			return
-		}
-		verts = append(verts, box2d.B2Vec2{mx, my})
+		player.SetLinearVelocity(movementVector)
+
 	})
 	defer mouseDownEvt.Release()
 
@@ -146,8 +101,9 @@ func main() {
 	})
 	floorShape := &box2d.B2PolygonShape{}
 	floorShape.SetAsBox(width*worldScale, 20*worldScale)
-	ft := floor.CreateFixture(floorShape, 1)
-	ft.M_friction = 0.3
+	ft = floor.CreateFixture(floorShape, 1)
+	ft.M_friction = 1
+	ft.M_restitution = 0
 
 	ceiling := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
@@ -157,7 +113,8 @@ func main() {
 	ceilingShape := &box2d.B2PolygonShape{}
 	ceilingShape.SetAsBox(width*worldScale, 20*worldScale)
 	ft = ceiling.CreateFixture(ceilingShape, 1)
-	ft.M_friction = 0.3
+	ft.M_friction = 1
+	ft.M_restitution = 0
 
 	leftWall := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
@@ -167,7 +124,8 @@ func main() {
 	leftWallShape := &box2d.B2PolygonShape{}
 	leftWallShape.SetAsBox(20*worldScale, height*worldScale)
 	ft = leftWall.CreateFixture(leftWallShape, 1)
-	ft.M_friction = 0.3
+	ft.M_friction = 1
+	ft.M_restitution = 0
 
 	rightWall := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
@@ -177,37 +135,25 @@ func main() {
 	rightWallShape := &box2d.B2PolygonShape{}
 	rightWallShape.SetAsBox(20*worldScale, height*worldScale)
 	ft = rightWall.CreateFixture(rightWallShape, 1)
-	ft.M_friction = 0.3
+	ft.M_friction = 1
+	ft.M_restitution = 0
 
-	// Some Random falling balls
-	for i := 0; i < 10; i++ {
+	// Some Random debris
+	for i := 0; i < 15; i++ {
 		obj1 := world.CreateBody(&box2d.B2BodyDef{
 			Type:         box2d.B2BodyType.B2_dynamicBody,
 			Position:     box2d.B2Vec2{X: rand.Float64() * width * worldScale, Y: rand.Float64() * height * worldScale},
+			Angle:        rand.Float64() * 100,
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
 		})
-		shape := box2d.NewB2CircleShape()
-		shape.M_radius = 50 * worldScale
+		shape := &box2d.B2PolygonShape{}
+		shape.SetAsBox((60*rand.Float64()+10)*worldScale, (60*rand.Float64()+20)*worldScale)
 		ft := obj1.CreateFixture(shape, 1)
-		ft.M_friction = 0.3
-		ft.M_restitution = 0.5 // bouncy
+		ft.M_friction = 1
+		ft.M_restitution = 0 // bouncy
 	}
-
-	// Player Ball
-	player := world.CreateBody(&box2d.B2BodyDef{
-		Type:         box2d.B2BodyType.B2_dynamicBody,
-		Position:     box2d.B2Vec2{X: 0.1 * width * worldScale, Y: 0.9 * height * worldScale},
-		Awake:        true,
-		Active:       true,
-		GravityScale: 1.0,
-	})
-	shape := box2d.NewB2CircleShape()
-	shape.M_radius = 15 * worldScale
-	ft = player.CreateFixture(shape, 1)
-	ft.M_friction = 0.3
-	ft.M_restitution = 0
 
 	// Draw things
 	var renderFrame js.Callback
@@ -223,7 +169,7 @@ func main() {
 		tdiff := now - tmark
 		tmark = now
 
-		// Pool window size to handle resize
+		// Poll window size to handle resize
 		curBodyW := doc.Get("body").Get("clientWidth").Float()
 		curBodyH := doc.Get("body").Get("clientHeight").Float()
 		if curBodyW != width || curBodyH != height {
@@ -288,26 +234,6 @@ func main() {
 		ctx.Call("stroke")
 
 		ctx.Call("restore")
-
-		// If we have a verts (mouse shape)
-		if verts != nil {
-			ctx.Call("save")
-			ctx.Call("beginPath")
-			ctx.Call("moveTo", verts[0].X, verts[0].Y)
-			for _, v := range verts[1:] {
-				ctx.Call("lineTo", v.X, v.Y)
-			}
-			ctx.Call("stroke")
-
-			ctx.Set("lineWidth", 4*worldScale)
-			for _, v := range verts { // Draw the clickPoints
-				ctx.Call("beginPath")
-				ctx.Call("arc", v.X, v.Y, 5*worldScale, 0, math.Pi*2)
-				ctx.Call("stroke")
-			}
-			ctx.Call("restore")
-
-		}
 
 		js.Global().Call("requestAnimationFrame", renderFrame)
 	})
