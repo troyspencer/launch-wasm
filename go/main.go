@@ -189,11 +189,25 @@ func main() {
 			GravityScale: 1.0,
 		})
 		shape := box2d.NewB2CircleShape()
-		shape.M_radius = 10 * worldScale
+		shape.M_radius = 50 * worldScale
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 0.3
 		ft.M_restitution = 0.5 // bouncy
 	}
+
+	// Player Ball
+	player := world.CreateBody(&box2d.B2BodyDef{
+		Type:         box2d.B2BodyType.B2_dynamicBody,
+		Position:     box2d.B2Vec2{X: 0.1 * width * worldScale, Y: 0.9 * height * worldScale},
+		Awake:        true,
+		Active:       true,
+		GravityScale: 1.0,
+	})
+	shape := box2d.NewB2CircleShape()
+	shape.M_radius = 15 * worldScale
+	ft = player.CreateFixture(shape, 1)
+	ft.M_friction = 0.3
+	ft.M_restitution = 0
 
 	// Draw things
 	var renderFrame js.Callback
@@ -220,6 +234,10 @@ func main() {
 		world.Step(tdiff/1000*simSpeed, 60, 120)
 
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
+
+		// color for other objects
+		ctx.Set("fillStyle", "rgba(100,100,100,1)")
+		ctx.Set("strokeStyle", "rgba(100,100,100,1)")
 
 		for curBody := world.GetBodyList(); curBody != nil; curBody = curBody.M_next {
 			// Only one fixture for now
@@ -251,6 +269,26 @@ func main() {
 			ctx.Call("restore")
 
 		}
+
+		// Player ball
+		// color
+		ctx.Set("fillStyle", "rgba(180, 180,180,1)")
+		ctx.Set("strokeStyle", "rgba(180,180,180,1)")
+
+		// draw player
+		curBody := player
+		ctx.Call("save")
+		ctx.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
+		ctx.Call("rotate", curBody.M_xf.Q.GetAngle())
+		ctx.Call("beginPath")
+		ctx.Call("arc", 0, 0, shape.M_radius, 0, 2*math.Pi)
+		ctx.Call("fill")
+		ctx.Call("moveTo", 0, 0)
+		ctx.Call("lineTo", 0, shape.M_radius)
+		ctx.Call("stroke")
+
+		ctx.Call("restore")
+
 		// If we have a verts (mouse shape)
 		if verts != nil {
 			ctx.Call("save")
