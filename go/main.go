@@ -8,6 +8,7 @@
 package main
 
 import (
+	"log"
 	"math"
 	"math/rand"
 	"syscall/js"
@@ -17,13 +18,16 @@ import (
 )
 
 var (
-	width       float64
-	height      float64
-	ctx         js.Value
-	simSpeed    float64 = 1
-	worldScale          = 0.0125 // 1/8
-	player      *box2d.B2Body
-	stickyArray []StickyInfo
+	width        float64
+	height       float64
+	ctx          js.Value
+	simSpeed     float64 = 1
+	begin        bool    = true
+	worldScale           = 0.0125 // 1/8
+	player       *box2d.B2Body
+	playerJoint  box2d.B2JointInterface
+	stickyArray  []StickyInfo
+	defaultWorld = box2d.B2World{}
 )
 
 func main() {
@@ -57,30 +61,6 @@ func main() {
 	ft := player.CreateFixture(shape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
-
-	mouseDownEvt := js.NewCallback(func(args []js.Value) {
-
-		e := args[0]
-		if e.Get("target") != canvasEl {
-			return
-		}
-		mx := e.Get("clientX").Float() * worldScale
-		my := e.Get("clientY").Float() * worldScale
-
-		movementDx := mx - player.GetPosition().X
-		movementDy := my - player.GetPosition().Y
-
-		// create normalized movement vector from player to click location
-		movementVector := box2d.B2Vec2{X: movementDx, Y: movementDy}
-		movementVector.Normalize()
-		movementVector.OperatorScalarMulInplace(8)
-
-		player.SetLinearVelocity(movementVector)
-
-	})
-	defer mouseDownEvt.Release()
-
-	doc.Call("addEventListener", "mousedown", mouseDownEvt)
 
 	// Boundaries
 	floor := world.CreateBody(&box2d.B2BodyDef{
@@ -144,6 +124,50 @@ func main() {
 		ft.M_restitution = 0 // bouncy
 	}
 
+	defaultWorld = world
+
+	mouseDownEvt := js.NewCallback(func(args []js.Value) {
+
+		e := args[0]
+		if e.Get("target") != canvasEl {
+			return
+		}
+		mx := e.Get("clientX").Float() * worldScale
+		my := e.Get("clientY").Float() * worldScale
+
+		movementDx := mx - player.GetPosition().X
+		movementDy := my - player.GetPosition().Y
+
+		// create normalized movement vector from player to click location
+		movementVector := box2d.B2Vec2{X: movementDx, Y: movementDy}
+		movementVector.Normalize()
+		movementVector.OperatorScalarMulInplace(5)
+
+		if playerJoint != nil {
+			world.DestroyJoint(playerJoint)
+			playerJoint = nil
+			player.SetLinearVelocity(movementVector)
+		}
+
+		if begin {
+			begin = false
+			player.SetLinearVelocity(movementVector)
+		}
+
+	})
+	defer mouseDownEvt.Release()
+
+	keyUpEvt := js.NewCallback(func(args []js.Value) {
+		e := args[0]
+		if e.Get("which").Int() == 27 {
+			log.Println("Reset")
+		}
+	})
+	defer keyUpEvt.Release()
+
+	doc.Call("addEventListener", "keyup", keyUpEvt)
+	doc.Call("addEventListener", "mousedown", mouseDownEvt)
+
 	// Draw things
 	var renderFrame js.Callback
 	var tmark float64
@@ -177,7 +201,13 @@ func main() {
 			weldJointDef.BodyA = stickyBody.bodyA
 			weldJointDef.BodyB = stickyBody.bodyB
 			weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
-			world.CreateJoint(&weldJointDef)
+			weldJointDef.LocalAnchorA = stickyBody.anchorPoint
+			weldJointDef.LocalAnchorB = stickyBody.anchorPoint
+			if playerJoint != nil {
+				world.DestroyJoint(playerJoint)
+				playerJoint = nil
+			}
+			playerJoint = world.CreateJoint(&weldJointDef)
 		}
 
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
@@ -251,7 +281,12 @@ type playerContactListener struct {
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
 	if contact.GetFixtureB().GetBody() == player {
-		stickyArray = append(stickyArray, StickyInfo{bodyA: contact.GetFixtureA().GetBody(), bodyB: contact.GetFixtureB().GetBody()})
+
+		stickyArray = append(stickyArray, StickyInfo{
+			bodyA:       contact.GetFixtureA().GetBody(),
+			bodyB:       contact.GetFixtureB().GetBody(),
+			anchorPoint: contact.GetManifold().LocalPoint,
+		})
 	}
 }
 
@@ -269,6 +304,7 @@ func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface
 
 // StickyInfo stores the two objects to be welded together after world.Step()
 type StickyInfo struct {
-	bodyA *box2d.B2Body
-	bodyB *box2d.B2Body
+	bodyA       *box2d.B2Body
+	bodyB       *box2d.B2Body
+	anchorPoint box2d.B2Vec2
 }
