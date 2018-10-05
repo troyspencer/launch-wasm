@@ -41,7 +41,6 @@ func main() {
 	done := make(chan struct{}, 0)
 
 	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
-	var verts []box2d.B2Vec2
 
 	world.SetContactListener(&playerContactListener{})
 
@@ -59,20 +58,7 @@ func main() {
 	ft.M_friction = 1
 	ft.M_restitution = 0
 
-	keyUpEvt := js.NewCallback(func(args []js.Value) {
-		e := args[0]
-		if e.Get("which").Int() == 27 {
-			verts = nil
-		}
-	})
-	defer keyUpEvt.Release()
 	mouseDownEvt := js.NewCallback(func(args []js.Value) {
-		defer func() {
-			// Recovering from possible box2d panic
-			if r := recover(); r != nil {
-				verts = nil
-			}
-		}()
 
 		e := args[0]
 		if e.Get("target") != canvasEl {
@@ -94,7 +80,6 @@ func main() {
 	})
 	defer mouseDownEvt.Release()
 
-	doc.Call("addEventListener", "keyup", keyUpEvt)
 	doc.Call("addEventListener", "mousedown", mouseDownEvt)
 
 	// Boundaries
@@ -192,8 +177,6 @@ func main() {
 			weldJointDef.BodyA = stickyBody.bodyA
 			weldJointDef.BodyB = stickyBody.bodyB
 			weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
-			weldJointDef.LocalAnchorA = stickyBody.bodyA.GetLocalPoint(stickyBody.bodyA.GetWorldPoint(box2d.B2Vec2{0, 0}))
-			weldJointDef.LocalAnchorB = stickyBody.bodyB.GetLocalPoint(stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{0, 0}))
 			world.CreateJoint(&weldJointDef)
 		}
 
@@ -284,6 +267,7 @@ func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface
 
 }
 
+// StickyInfo stores the two objects to be welded together after world.Step()
 type StickyInfo struct {
 	bodyA *box2d.B2Body
 	bodyB *box2d.B2Body
