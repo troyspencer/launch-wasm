@@ -17,11 +17,13 @@ import (
 )
 
 var (
-	width      float64
-	height     float64
-	ctx        js.Value
-	simSpeed   float64 = 1
-	worldScale         = 0.0125 // 1/8
+	width       float64
+	height      float64
+	ctx         js.Value
+	simSpeed    float64 = 1
+	worldScale          = 0.0125 // 1/8
+	player      *box2d.B2Body
+	stickyArray []StickyInfo
 )
 
 func main() {
@@ -41,8 +43,10 @@ func main() {
 	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
 	var verts []box2d.B2Vec2
 
+	world.SetContactListener(&playerContactListener{})
+
 	// Player Ball
-	player := world.CreateBody(&box2d.B2BodyDef{
+	player = world.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
 		Position:     box2d.B2Vec2{X: 0.1 * width * worldScale, Y: 0.9 * height * worldScale},
 		Awake:        true,
@@ -179,6 +183,20 @@ func main() {
 		}
 		world.Step(tdiff/1000*simSpeed, 60, 120)
 
+		// check for new weld joint and execute it
+		for len(stickyArray) > 0 {
+			stickyBody := stickyArray[0]
+			stickyArray[0] = stickyArray[len(stickyArray)-1]
+			stickyArray = stickyArray[:len(stickyArray)-1]
+			weldJointDef := box2d.MakeB2WeldJointDef()
+			weldJointDef.BodyA = stickyBody.bodyA
+			weldJointDef.BodyB = stickyBody.bodyB
+			weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
+			weldJointDef.LocalAnchorA = stickyBody.bodyA.GetLocalPoint(stickyBody.bodyA.GetWorldPoint(box2d.B2Vec2{0, 0}))
+			weldJointDef.LocalAnchorB = stickyBody.bodyB.GetLocalPoint(stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{0, 0}))
+			world.CreateJoint(&weldJointDef)
+		}
+
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
 
 		// color for other objects
@@ -243,4 +261,30 @@ func main() {
 
 	<-done
 
+}
+
+type playerContactListener struct {
+}
+
+func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
+	if contact.GetFixtureB().GetBody() == player {
+		stickyArray = append(stickyArray, StickyInfo{bodyA: contact.GetFixtureA().GetBody(), bodyB: contact.GetFixtureB().GetBody()})
+	}
+}
+
+func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {
+
+}
+
+func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {
+
+}
+
+func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {
+
+}
+
+type StickyInfo struct {
+	bodyA *box2d.B2Body
+	bodyB *box2d.B2Body
 }
