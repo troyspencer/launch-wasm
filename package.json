@@ -2,6 +2,7 @@
     "name": "launch-wasm",
     "version": "1.0.0",
     "scripts": {
+        "serve": "gulp browsersync"
     },
     "devDependencies": {
         "browser-sync": "^2.24.7",
