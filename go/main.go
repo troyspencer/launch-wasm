@@ -156,6 +156,8 @@ func main() {
 
 		world.Step(tdiff/1000*simSpeed, 60, 120)
 
+		checkPlayerOutOfBounds()
+
 		if resetWorld {
 			clearWorld()
 			populateWorld()
@@ -254,6 +256,11 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 			weldedDebris = contact.GetFixtureA().GetBody()
 		}
 
+		if weldedDebris.GetUserData() == "goalBlock" {
+			resetWorld = true
+			return
+		}
+
 		playerCollisionDetected = true
 
 		//contactPoint := contact.GetManifold().Points[0].Id
@@ -284,6 +291,12 @@ func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface
 type StickyInfo struct {
 	bodyA *box2d.B2Body
 	bodyB *box2d.B2Body
+}
+
+func checkPlayerOutOfBounds() {
+	if player.GetPosition().X < 0 || player.GetPosition().X > width || player.GetPosition().Y < 0 || player.GetPosition().Y > height {
+		resetWorld = true
+	}
 }
 
 func clearWorld() {
