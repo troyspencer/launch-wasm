@@ -277,9 +277,6 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 				weldContact(contact)
 			}
 
-		} else if contact.GetFixtureA().GetBody().GetLinearVelocity().Length() > 5 || contact.GetFixtureB().GetBody().GetLinearVelocity().Length() > 5 {
-			// detect fast debris
-			weldContact(contact)
 		}
 	}
 
