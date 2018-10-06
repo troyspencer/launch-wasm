@@ -293,13 +293,10 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 			//contactPoint := contact.GetManifold().Points[0].Id
 			var worldManifold box2d.B2WorldManifold
 			contact.GetWorldManifold(&worldManifold)
-			log.Println("World", worldManifold.Points[0])
-			log.Println("Local", contact.GetManifold().LocalPoint)
 
 			stickyArray = append(stickyArray, StickyInfo{
-				bodyA:       contact.GetFixtureA().GetBody(),
-				bodyB:       contact.GetFixtureB().GetBody(),
-				anchorPoint: contact.GetManifold().LocalPoint,
+				bodyA: contact.GetFixtureA().GetBody(),
+				bodyB: contact.GetFixtureB().GetBody(),
 			})
 		}
 
@@ -320,7 +317,6 @@ func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface
 
 // StickyInfo stores the two objects to be welded together after world.Step()
 type StickyInfo struct {
-	bodyA       *box2d.B2Body
-	bodyB       *box2d.B2Body
-	anchorPoint box2d.B2Vec2
+	bodyA *box2d.B2Body
+	bodyB *box2d.B2Body
 }
