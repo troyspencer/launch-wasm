@@ -22,7 +22,6 @@ var (
 	height                  float64
 	ctx                     js.Value
 	simSpeed                float64 = 1
-	begin                   bool    = true
 	worldScale                      = 0.0125 // 1/8
 	player                  *box2d.B2Body
 	playerJoint             box2d.B2JointInterface
@@ -53,7 +52,7 @@ func main() {
 	// Player Ball
 	player = world.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
-		Position:     box2d.B2Vec2{X: 0.2 * width * worldScale, Y: 0.9 * height * worldScale},
+		Position:     box2d.B2Vec2{X: 20 * worldScale, Y: height*worldScale - 20*worldScale},
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
@@ -110,7 +109,7 @@ func main() {
 	ft.M_restitution = 0
 
 	// Some Random debris
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 12; i++ {
 		obj1 := world.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -123,8 +122,8 @@ func main() {
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
-			(60*rand.Float64()+10)*worldScale,
-			(60*rand.Float64()+20)*worldScale)
+			rand.Float64()*width*worldScale/8,
+			rand.Float64()*height*worldScale/8)
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 1
 		ft.M_restitution = 0 // bouncy
@@ -152,11 +151,6 @@ func main() {
 		if playerWelded {
 			world.DestroyJoint(playerJoint)
 			playerWelded = false
-			player.SetLinearVelocity(movementVector)
-		}
-
-		if begin {
-			begin = false
 			player.SetLinearVelocity(movementVector)
 		}
 
