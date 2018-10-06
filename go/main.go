@@ -199,8 +199,7 @@ func main() {
 			stickyArray[0] = stickyArray[len(stickyArray)-1]
 			stickyArray = stickyArray[:len(stickyArray)-1]
 
-			var worldCoordsAnchorPoint box2d.B2Vec2
-			worldCoordsAnchorPoint = stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{X: 0, Y: 0})
+			worldCoordsAnchorPoint := stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{X: 0, Y: 0})
 
 			weldJointDef := box2d.MakeB2WeldJointDef()
 			weldJointDef.BodyA = stickyBody.bodyA
