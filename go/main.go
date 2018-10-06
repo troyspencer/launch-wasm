@@ -24,6 +24,7 @@ var (
 	simSpeed                float64 = 1
 	worldScale                      = 0.0125 // 1/8
 	player                  *box2d.B2Body
+	weldedDebris            *box2d.B2Body
 	playerJoint             box2d.B2JointInterface
 	playerCollisionDetected bool
 	playerWelded            bool
@@ -56,6 +57,7 @@ func main() {
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
+		Bullet:       true,
 	})
 	shape := box2d.NewB2CircleShape()
 	shape.M_radius = 15 * worldScale
@@ -152,6 +154,20 @@ func main() {
 			world.DestroyJoint(playerJoint)
 			playerWelded = false
 			player.SetLinearVelocity(movementVector)
+			if weldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
+				// calculate momentum of player
+				momentum := movementVector.Length() * player.GetMass()
+
+				// calculate length of debris velocity
+				debrisVelocityLength := momentum / weldedDebris.GetMass()
+
+				// calculate velocity of debris from momentum
+				debrisVector := movementVector
+				debrisVector.Normalize()
+				debrisVector.OperatorScalarMulInplace(debrisVelocityLength)
+				debrisVector = debrisVector.OperatorNegate()
+				weldedDebris.SetLinearVelocity(debrisVector)
+			}
 		}
 
 	})
@@ -285,19 +301,24 @@ type playerContactListener struct {
 }
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
-	if contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player {
-		if contact.IsTouching() && !playerCollisionDetected {
-			playerCollisionDetected = true
+	if (contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player) && contact.IsTouching() && !playerCollisionDetected {
 
-			//contactPoint := contact.GetManifold().Points[0].Id
-			var worldManifold box2d.B2WorldManifold
-			contact.GetWorldManifold(&worldManifold)
-
-			stickyArray = append(stickyArray, StickyInfo{
-				bodyA: contact.GetFixtureA().GetBody(),
-				bodyB: contact.GetFixtureB().GetBody(),
-			})
+		if contact.GetFixtureA().GetBody() == player {
+			weldedDebris = contact.GetFixtureB().GetBody()
+		} else {
+			weldedDebris = contact.GetFixtureA().GetBody()
 		}
+
+		playerCollisionDetected = true
+
+		//contactPoint := contact.GetManifold().Points[0].Id
+		var worldManifold box2d.B2WorldManifold
+		contact.GetWorldManifold(&worldManifold)
+
+		stickyArray = append(stickyArray, StickyInfo{
+			bodyA: contact.GetFixtureA().GetBody(),
+			bodyB: contact.GetFixtureB().GetBody(),
+		})
 
 	}
 }
