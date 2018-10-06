@@ -57,7 +57,6 @@ func main() {
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
-		Bullet:       true,
 	})
 	shape := box2d.NewB2CircleShape()
 	shape.M_radius = 15 * worldScale
@@ -111,7 +110,7 @@ func main() {
 	ft.M_restitution = 0
 
 	// Some Random debris
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		obj1 := world.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -207,7 +206,7 @@ func main() {
 			stickyArray = stickyArray[:len(stickyArray)-1]
 
 			var worldCoordsAnchorPoint box2d.B2Vec2
-			worldCoordsAnchorPoint = stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{0.6, 0})
+			worldCoordsAnchorPoint = stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{X: 0, Y: 0})
 
 			weldJointDef := box2d.MakeB2WeldJointDef()
 			weldJointDef.BodyA = stickyBody.bodyA
