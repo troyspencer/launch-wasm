@@ -258,12 +258,6 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 		// detect player collision
 		if contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player {
 
-			// If player has already collided with another object this frame
-			// ignore this collision
-			if playerCollisionDetected {
-				return
-			}
-
 			// check which fixture is the debris
 			if contact.GetFixtureA().GetBody() == player {
 				weldedDebris = contact.GetFixtureB().GetBody()
@@ -276,13 +270,17 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 				return
 			}
 
-			playerCollisionDetected = true
+			// If player has already collided with another object this frame
+			// ignore this collision
+			if !playerCollisionDetected && !playerWelded {
+				playerCollisionDetected = true
+				weldContact(contact)
+			}
+
+		} else if contact.GetFixtureA().GetBody().GetLinearVelocity().Length() > 5 || contact.GetFixtureB().GetBody().GetLinearVelocity().Length() > 5 {
+			// detect fast debris
 			weldContact(contact)
-			return
 		}
-
-		// detect fast debris
-
 	}
 
 }
