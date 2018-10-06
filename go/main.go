@@ -75,7 +75,7 @@ func main() {
 			impulseVelocity.Normalize()
 			impulseVelocity.OperatorScalarMulInplace(5)
 
-			world.DestroyJoint(playerJoint)
+			clearPlayerJoints()
 			playerWelded = false
 
 			if weldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
@@ -178,12 +178,15 @@ func main() {
 			weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
 			weldJointDef.LocalAnchorA = weldJointDef.BodyA.GetLocalPoint(worldCoordsAnchorPoint)
 			weldJointDef.LocalAnchorB = weldJointDef.BodyB.GetLocalPoint(worldCoordsAnchorPoint)
-			if playerWelded {
-				world.DestroyJoint(playerJoint)
+
+			if playerCollisionDetected {
+				playerJoint = world.CreateJoint(&weldJointDef)
+				playerCollisionDetected = false
+				playerWelded = true
+			} else {
+				world.CreateJoint(&weldJointDef)
 			}
-			playerJoint = world.CreateJoint(&weldJointDef)
-			playerCollisionDetected = false
-			playerWelded = true
+
 		}
 
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
@@ -248,31 +251,40 @@ type playerContactListener struct {
 }
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
-	if (contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player) && contact.IsTouching() && !playerCollisionDetected {
 
-		if contact.GetFixtureA().GetBody() == player {
-			weldedDebris = contact.GetFixtureB().GetBody()
-		} else {
-			weldedDebris = contact.GetFixtureA().GetBody()
-		}
+	// wait for bodies to actually contact
+	if contact.IsTouching() {
 
-		if weldedDebris.GetUserData() == "goalBlock" {
-			resetWorld = true
+		// detect player collision
+		if contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player {
+
+			// If player has already collided with another object this frame
+			// ignore this collision
+			if playerCollisionDetected {
+				return
+			}
+
+			// check which fixture is the debris
+			if contact.GetFixtureA().GetBody() == player {
+				weldedDebris = contact.GetFixtureB().GetBody()
+			} else {
+				weldedDebris = contact.GetFixtureA().GetBody()
+			}
+
+			if weldedDebris.GetUserData() == "goalBlock" {
+				resetWorld = true
+				return
+			}
+
+			playerCollisionDetected = true
+			weldContact(contact)
 			return
 		}
 
-		playerCollisionDetected = true
-
-		//contactPoint := contact.GetManifold().Points[0].Id
-		var worldManifold box2d.B2WorldManifold
-		contact.GetWorldManifold(&worldManifold)
-
-		stickyArray = append(stickyArray, StickyInfo{
-			bodyA: contact.GetFixtureA().GetBody(),
-			bodyB: contact.GetFixtureB().GetBody(),
-		})
+		// detect fast debris
 
 	}
+
 }
 
 func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {
@@ -285,6 +297,16 @@ func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface,
 
 func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {
 
+}
+
+func weldContact(contact box2d.B2ContactInterface) {
+	var worldManifold box2d.B2WorldManifold
+	contact.GetWorldManifold(&worldManifold)
+
+	stickyArray = append(stickyArray, StickyInfo{
+		bodyA: contact.GetFixtureA().GetBody(),
+		bodyB: contact.GetFixtureB().GetBody(),
+	})
 }
 
 // StickyInfo stores the two objects to be welded together after world.Step()
@@ -301,13 +323,18 @@ func checkPlayerOutOfBounds() {
 
 func clearWorld() {
 	// clear out world of any elements
-	if playerWelded {
-		world.DestroyJoint(playerJoint)
-		playerWelded = false
+	for joint := world.GetJointList(); joint != nil; joint = joint.GetNext() {
+		world.DestroyJoint(joint)
 	}
 
 	for body := world.GetBodyList(); body != nil; body = body.GetNext() {
 		world.DestroyBody(body)
+	}
+}
+
+func clearPlayerJoints() {
+	for jointEdge := player.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
+		world.DestroyJoint(jointEdge.Joint)
 	}
 }
 
