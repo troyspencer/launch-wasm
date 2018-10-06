@@ -18,16 +18,18 @@ import (
 )
 
 var (
-	width        float64
-	height       float64
-	ctx          js.Value
-	simSpeed     float64 = 1
-	begin        bool    = true
-	worldScale           = 0.0125 // 1/8
-	player       *box2d.B2Body
-	playerJoint  box2d.B2JointInterface
-	stickyArray  []StickyInfo
-	defaultWorld = box2d.B2World{}
+	width                   float64
+	height                  float64
+	ctx                     js.Value
+	simSpeed                float64 = 1
+	begin                   bool    = true
+	worldScale                      = 0.0125 // 1/8
+	player                  *box2d.B2Body
+	playerJoint             box2d.B2JointInterface
+	playerCollisionDetected bool
+	playerWelded            bool
+	stickyArray             []StickyInfo
+	defaultWorld            = box2d.B2World{}
 )
 
 func main() {
@@ -51,10 +53,11 @@ func main() {
 	// Player Ball
 	player = world.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
-		Position:     box2d.B2Vec2{X: 0.1 * width * worldScale, Y: 0.9 * height * worldScale},
+		Position:     box2d.B2Vec2{X: 0.2 * width * worldScale, Y: 0.9 * height * worldScale},
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
+		Bullet:       true,
 	})
 	shape := box2d.NewB2CircleShape()
 	shape.M_radius = 15 * worldScale
@@ -108,17 +111,21 @@ func main() {
 	ft.M_restitution = 0
 
 	// Some Random debris
-	for i := 0; i < 15; i++ {
+	for i := 0; i < 3; i++ {
 		obj1 := world.CreateBody(&box2d.B2BodyDef{
-			Type:         box2d.B2BodyType.B2_dynamicBody,
-			Position:     box2d.B2Vec2{X: rand.Float64() * width * worldScale, Y: rand.Float64() * height * worldScale},
+			Type: box2d.B2BodyType.B2_dynamicBody,
+			Position: box2d.B2Vec2{
+				X: rand.Float64() * width * worldScale,
+				Y: rand.Float64() * height * worldScale},
 			Angle:        rand.Float64() * 100,
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
 		})
 		shape := &box2d.B2PolygonShape{}
-		shape.SetAsBox((60*rand.Float64()+10)*worldScale, (60*rand.Float64()+20)*worldScale)
+		shape.SetAsBox(
+			(60*rand.Float64()+10)*worldScale,
+			(60*rand.Float64()+20)*worldScale)
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 1
 		ft.M_restitution = 0 // bouncy
@@ -143,9 +150,9 @@ func main() {
 		movementVector.Normalize()
 		movementVector.OperatorScalarMulInplace(5)
 
-		if playerJoint != nil {
+		if playerWelded {
 			world.DestroyJoint(playerJoint)
-			playerJoint = nil
+			playerWelded = false
 			player.SetLinearVelocity(movementVector)
 		}
 
@@ -190,6 +197,7 @@ func main() {
 			canvasEl.Set("width", width)
 			canvasEl.Set("height", height)
 		}
+
 		world.Step(tdiff/1000*simSpeed, 60, 120)
 
 		// check for new weld joint and execute it
@@ -197,17 +205,22 @@ func main() {
 			stickyBody := stickyArray[0]
 			stickyArray[0] = stickyArray[len(stickyArray)-1]
 			stickyArray = stickyArray[:len(stickyArray)-1]
+
+			var worldCoordsAnchorPoint box2d.B2Vec2
+			worldCoordsAnchorPoint = stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{0.6, 0})
+
 			weldJointDef := box2d.MakeB2WeldJointDef()
 			weldJointDef.BodyA = stickyBody.bodyA
 			weldJointDef.BodyB = stickyBody.bodyB
 			weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
-			weldJointDef.LocalAnchorA = stickyBody.anchorPoint
-			weldJointDef.LocalAnchorB = stickyBody.anchorPoint
-			if playerJoint != nil {
+			weldJointDef.LocalAnchorA = weldJointDef.BodyA.GetLocalPoint(worldCoordsAnchorPoint)
+			weldJointDef.LocalAnchorB = weldJointDef.BodyB.GetLocalPoint(worldCoordsAnchorPoint)
+			if playerWelded {
 				world.DestroyJoint(playerJoint)
-				playerJoint = nil
 			}
 			playerJoint = world.CreateJoint(&weldJointDef)
+			playerCollisionDetected = false
+			playerWelded = true
 		}
 
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
@@ -280,13 +293,23 @@ type playerContactListener struct {
 }
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
-	if contact.GetFixtureB().GetBody() == player {
+	if contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player {
+		if contact.IsTouching() && !playerCollisionDetected {
+			playerCollisionDetected = true
 
-		stickyArray = append(stickyArray, StickyInfo{
-			bodyA:       contact.GetFixtureA().GetBody(),
-			bodyB:       contact.GetFixtureB().GetBody(),
-			anchorPoint: contact.GetManifold().LocalPoint,
-		})
+			//contactPoint := contact.GetManifold().Points[0].Id
+			var worldManifold box2d.B2WorldManifold
+			contact.GetWorldManifold(&worldManifold)
+			log.Println("World", worldManifold.Points[0])
+			log.Println("Local", contact.GetManifold().LocalPoint)
+
+			stickyArray = append(stickyArray, StickyInfo{
+				bodyA:       contact.GetFixtureA().GetBody(),
+				bodyB:       contact.GetFixtureB().GetBody(),
+				anchorPoint: contact.GetManifold().LocalPoint,
+			})
+		}
+
 	}
 }
 
