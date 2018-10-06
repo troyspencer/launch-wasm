@@ -64,53 +64,41 @@ func main() {
 	ft.M_friction = 0
 	ft.M_restitution = 1
 
-	// Boundaries
-	floor := world.CreateBody(&box2d.B2BodyDef{
-		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: 0, Y: height*worldScale - 20*worldScale},
+	// Create launch block
+	launchBlock := world.CreateBody(&box2d.B2BodyDef{
+		Type:     box2d.B2BodyType.B2_dynamicBody,
+		Position: box2d.B2Vec2{X: 20 * worldScale, Y: height*worldScale - 20*worldScale},
 		Active:   true,
 	})
-	floorShape := &box2d.B2PolygonShape{}
-	floorShape.SetAsBox(width*worldScale, 20*worldScale)
-	ft = floor.CreateFixture(floorShape, 1)
+	launchBlockShape := &box2d.B2PolygonShape{}
+	launchBlockShape.SetAsBox(20*worldScale, 20*worldScale)
+	ft = launchBlock.CreateFixture(launchBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
 
-	ceiling := world.CreateBody(&box2d.B2BodyDef{
+	// Create goal block
+	goalBlock := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: 0, Y: 20 * worldScale},
+		Position: box2d.B2Vec2{X: width*worldScale - 20*worldScale, Y: 20 * worldScale},
 		Active:   true,
 	})
-	ceilingShape := &box2d.B2PolygonShape{}
-	ceilingShape.SetAsBox(width*worldScale, 20*worldScale)
-	ft = ceiling.CreateFixture(ceilingShape, 1)
+	goalBlockShape := &box2d.B2PolygonShape{}
+	goalBlockShape.SetAsBox(20*worldScale, 20*worldScale)
+	ft = goalBlock.CreateFixture(goalBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
 
-	leftWall := world.CreateBody(&box2d.B2BodyDef{
-		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: 20 * worldScale, Y: 0},
-		Active:   true,
-	})
-	leftWallShape := &box2d.B2PolygonShape{}
-	leftWallShape.SetAsBox(20*worldScale, height*worldScale)
-	ft = leftWall.CreateFixture(leftWallShape, 1)
-	ft.M_friction = 1
-	ft.M_restitution = 0
+	// find smallest dimension of screen for random object sizing
+	var smallestDimension float64
 
-	rightWall := world.CreateBody(&box2d.B2BodyDef{
-		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: width*worldScale - 20*worldScale, Y: 0},
-		Active:   true,
-	})
-	rightWallShape := &box2d.B2PolygonShape{}
-	rightWallShape.SetAsBox(20*worldScale, height*worldScale)
-	ft = rightWall.CreateFixture(rightWallShape, 1)
-	ft.M_friction = 1
-	ft.M_restitution = 0
+	if width > height {
+		smallestDimension = height
+	} else {
+		smallestDimension = width
+	}
 
 	// Some Random debris
-	for i := 0; i < 12; i++ {
+	for i := 0; i < 25; i++ {
 		obj1 := world.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -123,8 +111,8 @@ func main() {
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
-			rand.Float64()*width*worldScale/8,
-			rand.Float64()*height*worldScale/8)
+			rand.Float64()*smallestDimension*worldScale/10,
+			rand.Float64()*smallestDimension*worldScale/10)
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 1
 		ft.M_restitution = 0 // bouncy
@@ -257,11 +245,22 @@ func main() {
 
 		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
 
-		// color for other objects
-		ctx.Set("fillStyle", "rgba(100,100,100,1)")
-		ctx.Set("strokeStyle", "rgba(100,100,100,1)")
-
 		for curBody := world.GetBodyList(); curBody != nil; curBody = curBody.M_next {
+			// ignore player and goal block, as they are styled differently
+			if curBody == player {
+				// Player ball color
+				ctx.Set("fillStyle", "rgba(180, 180,180,1)")
+				ctx.Set("strokeStyle", "rgba(180,180,180,1)")
+			} else if curBody == goalBlock {
+				// Goal block color
+				ctx.Set("fillStyle", "rgba(0, 255,0,1)")
+				ctx.Set("strokeStyle", "rgba(0,255,0,1)")
+			} else {
+				// color for other objects
+				ctx.Set("fillStyle", "rgba(100,100,100,1)")
+				ctx.Set("strokeStyle", "rgba(100,100,100,1)")
+			}
+
 			// Only one fixture for now
 			ctx.Call("save")
 			ft := curBody.M_fixtureList
@@ -291,25 +290,6 @@ func main() {
 			ctx.Call("restore")
 
 		}
-
-		// Player ball
-		// color
-		ctx.Set("fillStyle", "rgba(180, 180,180,1)")
-		ctx.Set("strokeStyle", "rgba(180,180,180,1)")
-
-		// draw player
-		curBody := player
-		ctx.Call("save")
-		ctx.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
-		ctx.Call("rotate", curBody.M_xf.Q.GetAngle())
-		ctx.Call("beginPath")
-		ctx.Call("arc", 0, 0, shape.M_radius, 0, 2*math.Pi)
-		ctx.Call("fill")
-		ctx.Call("moveTo", 0, 0)
-		ctx.Call("lineTo", 0, shape.M_radius)
-		ctx.Call("stroke")
-
-		ctx.Call("restore")
 
 		js.Global().Call("requestAnimationFrame", renderFrame)
 	})
