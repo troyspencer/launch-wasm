@@ -73,7 +73,7 @@ func main() {
 			// create normalized movement vector from player to click location
 			impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
 			impulseVelocity.Normalize()
-			impulseVelocity.OperatorScalarMulInplace(5)
+			impulseVelocity.OperatorScalarMulInplace(getSmallestDimension() * worldScale / 2)
 
 			clearPlayerJoints()
 			playerWelded = false
@@ -333,12 +333,20 @@ func clearPlayerJoints() {
 	}
 }
 
+func getSmallestDimension() float64 {
+	if width > height {
+		return height
+	} else {
+		return width
+	}
+}
+
 func populateWorld() {
 
 	// Player Ball
 	player = world.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
-		Position:     box2d.B2Vec2{X: 20 * worldScale, Y: height*worldScale - 20*worldScale},
+		Position:     box2d.B2Vec2{X: getSmallestDimension() * worldScale / 32, Y: height*worldScale - getSmallestDimension()*worldScale/32},
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
@@ -346,7 +354,7 @@ func populateWorld() {
 		UserData:     "player",
 	})
 	shape := box2d.NewB2CircleShape()
-	shape.M_radius = 10 * worldScale
+	shape.M_radius = getSmallestDimension() * worldScale / 64
 	ft := player.CreateFixture(shape, 1)
 	ft.M_friction = 0
 	ft.M_restitution = 1
@@ -354,11 +362,11 @@ func populateWorld() {
 	// Create launch block
 	launchBlock := world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_dynamicBody,
-		Position: box2d.B2Vec2{X: 20 * worldScale, Y: height*worldScale - 20*worldScale},
+		Position: box2d.B2Vec2{X: getSmallestDimension() * worldScale / 32, Y: height*worldScale - getSmallestDimension()*worldScale/32},
 		Active:   true,
 	})
 	launchBlockShape := &box2d.B2PolygonShape{}
-	launchBlockShape.SetAsBox(20*worldScale, 20*worldScale)
+	launchBlockShape.SetAsBox(getSmallestDimension()*worldScale/32, getSmallestDimension()*worldScale/32)
 	ft = launchBlock.CreateFixture(launchBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
@@ -366,24 +374,15 @@ func populateWorld() {
 	// Create goal block
 	goalBlock = world.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: width*worldScale - 20*worldScale, Y: 20 * worldScale},
+		Position: box2d.B2Vec2{X: width*worldScale - getSmallestDimension()*worldScale/32, Y: getSmallestDimension() * worldScale / 32},
 		Active:   true,
 		UserData: "goalBlock",
 	})
 	goalBlockShape := &box2d.B2PolygonShape{}
-	goalBlockShape.SetAsBox(20*worldScale, 20*worldScale)
+	goalBlockShape.SetAsBox(getSmallestDimension()*worldScale/32, getSmallestDimension()*worldScale/32)
 	ft = goalBlock.CreateFixture(goalBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
-
-	// find smallest dimension of screen for random object sizing
-	var smallestDimension float64
-
-	if width > height {
-		smallestDimension = height
-	} else {
-		smallestDimension = width
-	}
 
 	// Some Random debris
 	for i := 0; i < 25; i++ {
@@ -399,8 +398,8 @@ func populateWorld() {
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
-			rand.Float64()*smallestDimension*worldScale/10,
-			rand.Float64()*smallestDimension*worldScale/10)
+			rand.Float64()*getSmallestDimension()*worldScale/10,
+			rand.Float64()*getSmallestDimension()*worldScale/10)
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 1
 		ft.M_restitution = 0 // bouncy
