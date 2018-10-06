@@ -29,7 +29,6 @@ var (
 	playerCollisionDetected bool
 	playerWelded            bool
 	stickyArray             []StickyInfo
-	defaultWorld            = box2d.B2World{}
 )
 
 func main() {
@@ -60,10 +59,10 @@ func main() {
 		Bullet:       true,
 	})
 	shape := box2d.NewB2CircleShape()
-	shape.M_radius = 15 * worldScale
+	shape.M_radius = 10 * worldScale
 	ft := player.CreateFixture(shape, 1)
-	ft.M_friction = 1
-	ft.M_restitution = 0
+	ft.M_friction = 0
+	ft.M_restitution = 1
 
 	// Boundaries
 	floor := world.CreateBody(&box2d.B2BodyDef{
@@ -131,43 +130,68 @@ func main() {
 		ft.M_restitution = 0 // bouncy
 	}
 
-	defaultWorld = world
-
+	// handle player clicks
 	mouseDownEvt := js.NewCallback(func(args []js.Value) {
 
 		e := args[0]
 		if e.Get("target") != canvasEl {
 			return
 		}
-		mx := e.Get("clientX").Float() * worldScale
-		my := e.Get("clientY").Float() * worldScale
 
-		movementDx := mx - player.GetPosition().X
-		movementDy := my - player.GetPosition().Y
-
-		// create normalized movement vector from player to click location
-		movementVector := box2d.B2Vec2{X: movementDx, Y: movementDy}
-		movementVector.Normalize()
-		movementVector.OperatorScalarMulInplace(5)
-
+		// only allow launch if grounded aka welded to an object
 		if playerWelded {
+
+			mx := e.Get("clientX").Float() * worldScale
+			my := e.Get("clientY").Float() * worldScale
+
+			movementDx := mx - player.GetPosition().X
+			movementDy := my - player.GetPosition().Y
+
+			// create normalized movement vector from player to click location
+			impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
+			impulseVelocity.Normalize()
+			impulseVelocity.OperatorScalarMulInplace(5)
+
 			world.DestroyJoint(playerJoint)
 			playerWelded = false
-			player.SetLinearVelocity(movementVector)
+
 			if weldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
+
+				// get current player velocity
+				playerCurrentVelocity := player.GetLinearVelocity()
+
+				// calculate difference between current player velocity and player desired velocity
+				velocityDisplacement := box2d.B2Vec2{
+					X: impulseVelocity.X - playerCurrentVelocity.X,
+					Y: impulseVelocity.Y - playerCurrentVelocity.Y}
+
 				// calculate momentum of player
-				momentum := movementVector.Length() * player.GetMass()
+				momentum := velocityDisplacement.Length() * player.GetMass()
 
-				// calculate length of debris velocity
-				debrisVelocityLength := momentum / weldedDebris.GetMass()
+				// calculate magnitude of debris velocity
+				debrisVelocityDisplacementMagnitude := momentum / weldedDebris.GetMass()
 
-				// calculate velocity of debris from momentum
-				debrisVector := movementVector
-				debrisVector.Normalize()
-				debrisVector.OperatorScalarMulInplace(debrisVelocityLength)
-				debrisVector = debrisVector.OperatorNegate()
-				weldedDebris.SetLinearVelocity(debrisVector)
+				// calculate velocity displacement of debris from momentum
+				debrisVelocityDisplacement := velocityDisplacement
+				debrisVelocityDisplacement.Normalize()
+				debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
+				debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
+
+				// get debris current velocity, which should match the players current velocity due to welding
+				debrisCurrentVelocity := weldedDebris.GetLinearVelocity()
+
+				// calculate resultant from debris current velocity and debris velocity displacement
+				debrisVelocity := box2d.B2Vec2{
+					X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
+					Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
+				}
+
+				// update debris velocity
+				weldedDebris.SetLinearVelocity(debrisVelocity)
 			}
+
+			// set player velocity to player desired velocity
+			player.SetLinearVelocity(impulseVelocity)
 		}
 
 	})
