@@ -294,7 +294,7 @@ type StickyInfo struct {
 }
 
 func checkPlayerOutOfBounds() {
-	if player.GetPosition().X < 0 || player.GetPosition().X > width || player.GetPosition().Y < 0 || player.GetPosition().Y > height {
+	if player.GetPosition().X < 0 || player.GetPosition().X > width*worldScale || player.GetPosition().Y < 0 || player.GetPosition().Y > height*worldScale {
 		resetWorld = true
 	}
 }
