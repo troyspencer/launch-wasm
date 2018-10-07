@@ -11,6 +11,7 @@ import (
 	"math"
 	"math/rand"
 	"syscall/js"
+	"time"
 
 	// this box2d throws some unexpected panics
 	"github.com/ByteArena/box2d"
@@ -46,6 +47,9 @@ func main() {
 	ctx.Call("scale", 1/worldScale, 1/worldScale)
 
 	done := make(chan struct{}, 0)
+
+	// seed the random generator
+	rand.Seed(time.Now().UnixNano())
 
 	world = box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
 
