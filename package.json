@@ -2,7 +2,9 @@
     "name": "launch-wasm",
     "version": "1.0.0",
     "scripts": {
-        "serve": "gulp browsersync"
+        "serve": "gulp browsersync",
+        "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
+        "dev-windows": "python27 \"%userprofile%/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/dev_appserver.py\" server/app.yaml"
     },
     "devDependencies": {
         "browser-sync": "^2.24.7",

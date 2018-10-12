@@ -1,0 +1,26 @@
+service: launch
+runtime: go
+api_version: go1
+
+handlers:
+- url: /(.*\.(js|css|json|html|ico))$
+  static_files: static/\1
+  upload: static/.*\.(js|css|json|html|ico)$
+
+- url: /build/(.*\.(wasm))$
+  static_files: static/build/\1
+  upload: static/build/.*\.(wasm)$
+  mime_type: application/wasm
+
+# If the path is empty, show static index.html file
+- url: (.*)/
+  static_files: static/index.html
+  upload: static/index.html
+
+- url: (.*)
+  static_files: static/index.html
+  upload: static/index.html
+
+- url: /
+  static_files: static/index.html
+  upload: static/index.html
