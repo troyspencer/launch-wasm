@@ -5,7 +5,8 @@
         "serve": "gulp browsersync",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
         "dev-windows": "python27 \"%userprofile%/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/dev_appserver.py\" server/app.yaml",
-        "dev-linux": "dev_appserver.py server/app.yaml"
+        "dev-linux": "dev_appserver.py server/app.yaml",
+        "dispatch": "gcloud app deploy --project=keen-ascent-205301 server/dispatch.yaml"
     },
     "devDependencies": {
         "browser-sync": "^2.24.7",
