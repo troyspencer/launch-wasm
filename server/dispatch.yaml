@@ -1,7 +1,9 @@
 dispatch:
-- url: "launch.datagrinder.app/"
-  service: launch
+- url: "www.datagrinder.app/*"
+  service: default
+
+- url: "datagrinder.app/*"
+  service: default
 
 - url: "launch.datagrinder.app/*"
   service: launch
-
