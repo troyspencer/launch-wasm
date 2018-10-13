@@ -1,2 +1,2 @@
-server/static/build
+server/*.wasm
 node_modules

@@ -13,8 +13,7 @@ import (
 	"syscall/js"
 	"time"
 
-	// this box2d throws some unexpected panics
-	"github.com/ByteArena/box2d"
+	"github.com/ByteArena/box2d" // this box2d throws some unexpected panics
 )
 
 var (

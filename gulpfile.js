@@ -11,7 +11,7 @@ gulp.task('wasm-watch', ['wasm-build'], function() {
 
 // wasm build
 gulp.task('wasm-build', function(cb) {
-  exec('env GOOS=js GOARCH=wasm go build -o server/static/build/main.wasm go/main.go', function(err, stdout, stderr) {
+  exec('env GOOS=js GOARCH=wasm go build -o server/main.wasm go/main.go', function(err, stdout, stderr) {
     if (stdout) {
       console.log(stdout)
     }
@@ -32,7 +32,7 @@ gulp.task('browsersync', function() {
       }
     },
     server: {
-        baseDir: "./server/static"
+        baseDir: "./server"
     },
     "browser": "google chrome",
     "open": false

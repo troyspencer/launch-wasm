@@ -3,24 +3,20 @@ runtime: go
 api_version: go1
 
 handlers:
-- url: /(.*\.(js|css|json|html|ico))$
-  static_files: static/\1
-  upload: static/.*\.(js|css|json|html|ico)$
+- url: /index.html
+  static_files: index.html
+  upload: index.html
 
-- url: /build/(.*\.(wasm))$
-  static_files: static/build/\1
-  upload: static/build/.*\.(wasm)$
+- url: /wasm_exec.js
+  static_files: wasm_exec.js
+  upload: wasm_exec.js
+
+- url: /main.wasm
+  static_files: main.wasm
+  upload: main.wasm
   mime_type: application/wasm
 
 # If the path is empty, show static index.html file
-- url: (.*)/
-  static_files: static/index.html
-  upload: static/index.html
-
-- url: (.*)
-  static_files: static/index.html
-  upload: static/index.html
-
 - url: /
-  static_files: static/index.html
-  upload: static/index.html
+  static_files: index.html
+  upload: index.html
