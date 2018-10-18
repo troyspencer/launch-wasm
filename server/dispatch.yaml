@@ -1,8 +1,8 @@
 dispatch:
-- url: "launch.datagrinder.app/*"
+- url: "launch-wasm.datagrinder.app/*"
   service: launch
 
-- url: "launch-dot-keen-ascent-205301.appspot.com/*"
+- url: "launch-wasm-dot-keen-ascent-205301.appspot.com/*"
   service: launch
 
 - url: "keen-ascent-205301.appspot.com/*"
