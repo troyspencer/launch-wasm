@@ -1,15 +1,3 @@
 dispatch:
 - url: "launch-wasm.datagrinder.app/*"
   service: launch
-
-- url: "launch-wasm-dot-keen-ascent-205301.appspot.com/*"
-  service: launch
-
-- url: "keen-ascent-205301.appspot.com/*"
-  service: default
-
-- url: "www.datagrinder.app/*"
-  service: default
-
-- url: "datagrinder.app/*"
-  service: default
