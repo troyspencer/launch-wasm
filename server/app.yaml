@@ -1,6 +1,5 @@
 service: launch
-runtime: go
-api_version: go1
+runtime: go111
 
 handlers:
 - url: /index.html

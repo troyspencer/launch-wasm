@@ -4,8 +4,8 @@
     "scripts": {
         "serve": "gulp serve",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
-        "dev-windows": "python27 \"%userprofile%/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/dev_appserver.py\" server/app.yaml",
-        "dev-linux": "dev_appserver.py server/app.yaml",
+        "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml",
+        "dev": "dev_appserver.py server/app.yaml",
         "dispatch": "gcloud app deploy --project=keen-ascent-205301 server/dispatch.yaml"
     },
     "devDependencies": {
