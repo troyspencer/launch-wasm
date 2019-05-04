@@ -18,6 +18,8 @@ type WorldSettings struct {
 	Height     float64
 	Width      float64
 	WorldScale float64
+	Resizing   bool
+	LastResize float64
 }
 
 type WorldState struct {
@@ -73,14 +75,16 @@ func (worldState WorldState) IsPlayerOutOfBounds() bool {
 		worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale
 }
 
-func (worldState *WorldState) Resize() {
+func (worldState *WorldState) Resize() bool {
 	// Poll window size to handle resize
 	curBodyW := worldState.Doc.Get("body").Get("clientWidth").Float()
 	curBodyH := worldState.Doc.Get("body").Get("clientHeight").Float()
 	if curBodyW != worldState.Width || curBodyH != worldState.Height {
 		worldState.Width, worldState.Height = curBodyW, curBodyH
 		worldState.Size()
+		return true
 	}
+	return false
 }
 
 func (worldState *WorldState) Size() {
