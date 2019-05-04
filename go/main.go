@@ -259,10 +259,10 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 	if contact.IsTouching() {
 
 		// detect player collision
-		if contact.GetFixtureB().GetBody() == player || contact.GetFixtureA().GetBody() == player {
+		if contact.GetFixtureB().GetBody().GetUserData() == "player" || contact.GetFixtureA().GetBody().GetUserData() == "player" {
 
 			// check which fixture is the debris
-			if contact.GetFixtureA().GetBody() == player {
+			if contact.GetFixtureA().GetBody().GetUserData() == "player" {
 				weldedDebris = contact.GetFixtureB().GetBody()
 			} else {
 				weldedDebris = contact.GetFixtureA().GetBody()
@@ -339,9 +339,8 @@ func clearPlayerJoints() {
 func getSmallestDimension() float64 {
 	if width > height {
 		return height
-	} else {
-		return width
 	}
+	return width
 }
 
 func populateWorld() {
@@ -367,6 +366,7 @@ func populateWorld() {
 		Type:     box2d.B2BodyType.B2_dynamicBody,
 		Position: box2d.B2Vec2{X: getSmallestDimension() * worldScale / 32, Y: height*worldScale - getSmallestDimension()*worldScale/32},
 		Active:   true,
+		UserData: "launchBlock",
 	})
 	launchBlockShape := &box2d.B2PolygonShape{}
 	launchBlockShape.SetAsBox(getSmallestDimension()*worldScale/32, getSmallestDimension()*worldScale/32)
@@ -398,6 +398,7 @@ func populateWorld() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
+			UserData:     "weldableDebris",
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
