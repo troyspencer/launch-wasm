@@ -4,33 +4,22 @@
 		<meta charset="utf-8">
 		<script src="wasm_exec.js"></script>
 		<script>
-			async function run() {
-				const go = new Go();
-				const fetchPromise = fetch("main.wasm");
-				let instantiatePromise;
+			const go = new Go(); // Defined in wasm_exec.js
+			const WASM_URL = 'main.wasm';
 
-				// Detect support for WebAssembly.instantiateStreaming
-				const isInstantiateStreamingSupported = typeof WebAssembly.instantiateStreaming == "function";
-
-				if (isInstantiateStreamingSupported) {
-				// Streaming supported
-				instantiatePromise = WebAssembly.instantiateStreaming(
-					fetchPromise,
-					go.importObject
-				);
-				} else {
-				// No streaming supported — old method
-				instantiatePromise = fetchPromise
-					.then(response => response.arrayBuffer())
-					.then(buffer => WebAssembly.instantiate(buffer, go.importObject));
-				}
-
-				const result = await instantiatePromise;
-
-				go.run(result.instance)
+			if ('instantiateStreaming' in WebAssembly) {
+				WebAssembly.instantiateStreaming(fetch(WASM_URL), go.importObject).then(function (obj) {
+					go.run(obj.instance)
+				})
+			} else {
+				fetch(WASM_URL).then(resp =>
+					resp.arrayBuffer()
+				).then(bytes =>
+					WebAssembly.instantiate(bytes, go.importObject).then(function (obj) {
+						go.run(obj.instance);
+					})
+				)
 			}
-
-			run()
 		</script>
 	<style>
 body,pre { margin:0;padding:0; }
