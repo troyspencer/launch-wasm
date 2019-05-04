@@ -80,7 +80,7 @@ func main() {
 
 	worldState.World.SetContactListener(&playerContactListener{WorldState: worldState})
 
-	populateWorld(worldState)
+	worldState.Populate()
 
 	// handle player clicks
 	mouseDownEvt := js.NewCallback(worldState.HandleClick)
@@ -121,9 +121,9 @@ func (worldState *WorldState) HandleClick(args []js.Value) {
 		// create normalized movement vector from player to click location
 		impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
 		impulseVelocity.Normalize()
-		impulseVelocity.OperatorScalarMulInplace(getSmallestDimension(worldState) * worldState.WorldScale / 2)
+		impulseVelocity.OperatorScalarMulInplace(worldState.GetSmallestDimension() * worldState.WorldScale / 2)
 
-		clearPlayerJoints(worldState)
+		worldState.ClearPlayerJoints()
 		worldState.PlayerWelded = false
 
 		if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
@@ -179,11 +179,11 @@ func (worldState *WorldState) RenderFrame(args []js.Value) {
 
 	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
-	checkPlayerOutOfBounds(worldState)
+	worldState.CheckPlayerOutOfBounds()
 
 	if worldState.ResetWorld {
-		clearWorld(worldState)
-		populateWorld(worldState)
+		worldState.Clear()
+		worldState.Populate()
 		worldState.ResetWorld = false
 	}
 
@@ -289,7 +289,7 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 			// ignore this collision
 			if !worldState.PlayerCollisionDetected && !worldState.PlayerWelded {
 				worldState.PlayerCollisionDetected = true
-				weldContact(worldState, contact)
+				worldState.WeldContact(contact)
 			}
 		}
 	}
@@ -297,11 +297,13 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {}
 
-func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {}
+func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {
+}
 
-func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {}
+func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {
+}
 
-func weldContact(worldState *WorldState, contact box2d.B2ContactInterface) {
+func (worldState *WorldState) WeldContact(contact box2d.B2ContactInterface) {
 	var worldManifold box2d.B2WorldManifold
 	contact.GetWorldManifold(&worldManifold)
 
@@ -317,13 +319,13 @@ type StickyInfo struct {
 	bodyB *box2d.B2Body
 }
 
-func checkPlayerOutOfBounds(worldState *WorldState) {
+func (worldState WorldState) CheckPlayerOutOfBounds() {
 	if worldState.Player.GetPosition().X < 0 || worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale || worldState.Player.GetPosition().Y < 0 || worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale {
 		worldState.ResetWorld = true
 	}
 }
 
-func clearWorld(worldState *WorldState) {
+func (worldState *WorldState) Clear() {
 	// clear out world of any elements
 	for joint := worldState.World.GetJointList(); joint != nil; joint = joint.GetNext() {
 		worldState.World.DestroyJoint(joint)
@@ -334,21 +336,21 @@ func clearWorld(worldState *WorldState) {
 	}
 }
 
-func clearPlayerJoints(worldState *WorldState) {
+func (worldState *WorldState) ClearPlayerJoints() {
 	for jointEdge := worldState.Player.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
 		worldState.World.DestroyJoint(jointEdge.Joint)
 	}
 }
 
-func getSmallestDimension(worldState *WorldState) float64 {
+func (worldState WorldState) GetSmallestDimension() float64 {
 	if worldState.Width > worldState.Height {
 		return worldState.Height
 	}
 	return worldState.Width
 }
 
-func populateWorld(worldState *WorldState) {
-	smallestDimension := getSmallestDimension(worldState)
+func (worldState *WorldState) Populate() {
+	smallestDimension := worldState.GetSmallestDimension()
 
 	// Player Ball
 	worldState.Player = worldState.World.CreateBody(&box2d.B2BodyDef{
