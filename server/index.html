@@ -10,8 +10,7 @@
 				let instantiatePromise;
 
 				// Detect support for WebAssembly.instantiateStreaming
-				const isInstantiateStreamingSupported =
-				typeof WebAssembly.instantiateStreaming == "function";
+				const isInstantiateStreamingSupported = typeof WebAssembly.instantiateStreaming == "function";
 
 				if (isInstantiateStreamingSupported) {
 				// Streaming supported

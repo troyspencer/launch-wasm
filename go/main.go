@@ -18,10 +18,10 @@ func main() {
 	worldState.World.SetContactListener(&contact.PlayerContactListener{WorldState: worldState})
 
 	// handle player clicks
-	mouseDownEvt := js.NewCallback(worldState.HandleClick)
+	mouseDownEvt := js.FuncOf(worldState.HandleClick)
 	defer mouseDownEvt.Release()
 
-	keyUpEvt := js.NewCallback(worldState.HandleEsc)
+	keyUpEvt := js.FuncOf(worldState.HandleEsc)
 	defer keyUpEvt.Release()
 
 	worldState.Doc.Call("addEventListener", "keyup", keyUpEvt)
@@ -29,6 +29,7 @@ func main() {
 
 	done := make(chan struct{}, 0)
 	// Start running
-	js.Global().Call("requestAnimationFrame", js.NewCallback(worldState.RenderFrame))
+	renderFrame := js.FuncOf(worldState.RenderFrame)
+	js.Global().Call("requestAnimationFrame", renderFrame)
 	<-done
 }
