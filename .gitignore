@@ -1,2 +1,3 @@
-server/*.wasm
+*.wasm
+*.wasm.gz
 node_modules

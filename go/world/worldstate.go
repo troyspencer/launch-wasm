@@ -237,7 +237,6 @@ func (worldState *WorldState) CreateStaticDebris() {
 	}
 }
 
-
 func (worldState *WorldState) CreateStaticBouncyDebris() {
 	smallestDimension := worldState.GetSmallestDimension()
 

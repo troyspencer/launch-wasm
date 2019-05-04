@@ -11,11 +11,31 @@ const buildWasm = (cb) => {
     }
     if (stderr) {
       console.log(stderr);
-    }
+    }      
     cb(err)
     reloadServer()
   })
 }
+
+const dockerBuildWasm = (cb) => {
+  exec('rm -f server/main.wasm.gz && rm -f server/main.wasm && env GOOS=js GOARCH=wasm go build -o server/main.wasm go/main.go && gzip server/main.wasm', (err, stdout, stderr) => {
+    if (stdout) {
+      console.log(stdout)
+    }
+    if (stderr) {
+      console.log(stderr);
+    }
+    cb(err)
+  })
+}
+
+const dockerServe = () => {
+  var folders = ["","contact/","world/"]
+  for (var i = 0; i < folders.length; i++) {
+    gulp.watch("./go/"+folders[i]+"*.go", dockerBuildWasm)
+  }
+}
+
 
 const reloadServer = () => {
   setTimeout(() => { browserSyncInstance.reload() }, 300); 
@@ -48,7 +68,9 @@ const defaultTasks = gulp.series(serve)
 export {
   buildWasm,
   reloadServer,
-  serve
+  serve,
+  dockerServe,
+  dockerBuildWasm
 }
 
 export default defaultTasks

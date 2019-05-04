@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "scripts": {
         "serve": "gulp serve",
+        "docker-serve": "gulp dockerServe && sh ./run.sh",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
         "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml",
         "dev": "dev_appserver.py server/app.yaml",
