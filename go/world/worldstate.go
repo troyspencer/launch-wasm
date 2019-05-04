@@ -40,7 +40,10 @@ func Initialize() *WorldState {
 		WorldSettings: &WorldSettings{},
 		JSObjects:     &JSObjects{},
 	}
+
 	worldState.Doc = js.Global().Get("document")
+	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
+	worldState.Context = worldState.Canvas.Call("getContext", "2d")
 
 	// create WorldSettings
 	worldSettings := &WorldSettings{
@@ -56,18 +59,7 @@ func Initialize() *WorldState {
 	worldState.WorldSettings = worldSettings
 	worldState.World = &world
 
-	// Init Canvas stuff
-	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
-	worldState.Canvas.Call("setAttribute", "width", worldState.Width)
-	worldState.Canvas.Call("setAttribute", "height", worldState.Height)
-
-	worldState.Context = worldState.Canvas.Call("getContext", "2d")
-	worldState.Context.Call("scale", 1/worldSettings.WorldScale, 1/worldSettings.WorldScale)
-
-	// overall style
-	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
+	worldState.Size()
 
 	worldState.Populate()
 
@@ -79,6 +71,30 @@ func (worldState WorldState) IsPlayerOutOfBounds() bool {
 		worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale ||
 		worldState.Player.GetPosition().Y < 0 ||
 		worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale
+}
+
+func (worldState *WorldState) Resize() {
+	// Poll window size to handle resize
+	curBodyW := worldState.Doc.Get("body").Get("clientWidth").Float()
+	curBodyH := worldState.Doc.Get("body").Get("clientHeight").Float()
+	if curBodyW != worldState.Width || curBodyH != worldState.Height {
+		worldState.Width, worldState.Height = curBodyW, curBodyH
+		worldState.Size()
+	}
+}
+
+func (worldState *WorldState) Size() {
+	// size
+	worldState.Canvas.Set("width", worldState.Width)
+	worldState.Canvas.Set("height", worldState.Height)
+
+	// scale
+	worldState.Context.Call("scale", 1/worldState.WorldScale, 1/worldState.WorldScale)
+
+	// style
+	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
 }
 
 func (worldState *WorldState) Clear() {

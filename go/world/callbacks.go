@@ -30,14 +30,7 @@ func (worldState *WorldState) RenderFrame(args []js.Value) {
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
 
-	// Poll window size to handle resize
-	curBodyW := worldState.Doc.Get("body").Get("clientWidth").Float()
-	curBodyH := worldState.Doc.Get("body").Get("clientHeight").Float()
-	if curBodyW != worldState.Width || curBodyH != worldState.Height {
-		worldState.Width, worldState.Height = curBodyW, curBodyH
-		worldState.Canvas.Set("width", worldState.Width)
-		worldState.Canvas.Set("height", worldState.Height)
-	}
+	worldState.Resize()
 
 	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
