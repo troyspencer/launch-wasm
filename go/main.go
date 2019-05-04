@@ -1,5 +1,3 @@
-//Wasming
-// compile: GOOS=js GOARCH=wasm go build -o main.wasm ./main.go
 package main
 
 import (
@@ -7,7 +5,6 @@ import (
 	"syscall/js"
 	"time"
 
-	// this box2d throws some unexpected panics
 	"github.com/troyspencer/launch-wasm/go/contact"
 	"github.com/troyspencer/launch-wasm/go/world"
 )

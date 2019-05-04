@@ -36,7 +36,11 @@ const serve = () => {
     "open": false
   });
 
-  gulp.watch("./go/*.go", buildWasm)
+  var folders = ["","contact/","world/"]
+
+  for (var i = 0; i < folders.length; i++) {
+    gulp.watch("./go/"+folders[i]+"*.go", buildWasm)
+  }
 }
 
 const defaultTasks = gulp.series(serve)
