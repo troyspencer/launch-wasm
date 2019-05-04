@@ -4,10 +4,22 @@
 		<meta charset="utf-8">
 		<script src="wasm_exec.js"></script>
 		<script>
-			const go = new Go();
-			WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
-				go.run(result.instance);
-			});
+			const go = new Go(); // Defined in wasm_exec.js
+			const WASM_URL = 'main.wasm';
+
+			if ('instantiateStreaming' in WebAssembly) {
+				WebAssembly.instantiateStreaming(fetch(WASM_URL), go.importObject).then(function (obj) {
+					go.run(obj.instance)
+				})
+			} else {
+				fetch(WASM_URL).then(resp =>
+					resp.arrayBuffer()
+				).then(bytes =>
+					WebAssembly.instantiate(bytes, go.importObject).then(function (obj) {
+						go.run(obj.instance);
+					})
+				)
+			}
 		</script>
 	<style>
 body,pre { margin:0;padding:0; }

@@ -4,17 +4,18 @@ import (
 	"syscall/js"
 )
 
-func (worldState *WorldState) HandleEsc(args []js.Value) {
+func (worldState *WorldState) HandleEsc(this js.Value, args []js.Value) interface{} {
 	e := args[0]
 	if e.Get("which").Int() == 27 {
 		worldState.ResetWorld = true
 	}
+	return nil
 }
 
-func (worldState *WorldState) HandleClick(args []js.Value) {
+func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interface{} {
 	e := args[0]
 	if e.Get("target") != worldState.Canvas {
-		return
+		return nil
 	}
 
 	// only allow launch if grounded aka welded to an object
@@ -23,14 +24,23 @@ func (worldState *WorldState) HandleClick(args []js.Value) {
 		my := e.Get("clientY").Float() * worldState.WorldScale
 		worldState.LaunchPlayer(mx, my)
 	}
+	return nil
 }
 
-func (worldState *WorldState) RenderFrame(args []js.Value) {
+func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interface{} {
 	now := args[0].Float()
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
 
-	worldState.Resize()
+	resizing := worldState.Resize()
+	if resizing {
+		worldState.Resizing = true
+		worldState.LastResize = now
+	}
+	if now-worldState.LastResize > 150 && worldState.Resizing {
+		worldState.Reset()
+		worldState.Resizing = false
+	}
 
 	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
@@ -51,5 +61,7 @@ func (worldState *WorldState) RenderFrame(args []js.Value) {
 		// ignore player and goal block, as they are styled differently
 		worldState.Draw(curBody)
 	}
-	js.Global().Call("requestAnimationFrame", js.NewCallback(worldState.RenderFrame))
+	renderFrame := js.FuncOf(worldState.RenderFrame)
+	js.Global().Call("requestAnimationFrame", renderFrame)
+	return nil
 }
