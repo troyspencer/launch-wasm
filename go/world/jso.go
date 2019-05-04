@@ -22,12 +22,15 @@ func (jso *JSObjects) Draw(body *box2d.B2Body) {
 		// Goal block color
 		jso.Context.Set("fillStyle", "rgba(0, 255,0,1)")
 		jso.Context.Set("strokeStyle", "rgba(0,255,0,1)")
+	} else if body.GetUserData() == "staticDebris" || body.GetUserData() == "launchBlock" {
+		// color for other objects
+		jso.Context.Set("fillStyle", "rgba(50,50,50,1)")
+		jso.Context.Set("strokeStyle", "rgba(50,50,50,1)")
 	} else {
 		// color for other objects
 		jso.Context.Set("fillStyle", "rgba(100,100,100,1)")
 		jso.Context.Set("strokeStyle", "rgba(100,100,100,1)")
 	}
-
 	// Only one fixture for now
 	jso.Context.Call("save")
 	ft := body.M_fixtureList
