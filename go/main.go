@@ -1,13 +1,9 @@
-// Click on canvas to start a polygon
-// - Max 8 vertices
-// - Only convex polygons
-// - Esc cancel polygon
-
 //Wasming
 // compile: GOOS=js GOARCH=wasm go build -o main.wasm ./main.go
 package main
 
 import (
+	"log"
 	"math"
 	"math/rand"
 	"syscall/js"
@@ -16,75 +12,102 @@ import (
 	"github.com/ByteArena/box2d" // this box2d throws some unexpected panics
 )
 
-var (
-	width                   float64
-	height                  float64
-	ctx                     js.Value
-	simSpeed                float64 = 1
-	worldScale                      = 0.0125 // 1/8
-	player                  *box2d.B2Body
-	weldedDebris            *box2d.B2Body
-	goalBlock               *box2d.B2Body
-	playerJoint             box2d.B2JointInterface
-	playerCollisionDetected bool
-	playerWelded            bool
-	stickyArray             []StickyInfo
-	world                   box2d.B2World
-	resetWorld              bool
-)
+type JSObjects struct {
+	Context js.Value
+	Doc     js.Value
+	Canvas  js.Value
+}
+
+type WorldSettings struct {
+	SimSpeed   float64
+	Height     float64
+	Width      float64
+	WorldScale float64
+}
+
+type WorldState struct {
+	*WorldSettings
+	*JSObjects
+	Player                  *box2d.B2Body
+	WeldedDebris            *box2d.B2Body
+	GoalBlock               *box2d.B2Body
+	PlayerJoint             box2d.B2JointInterface
+	PlayerCollisionDetected bool
+	PlayerWelded            bool
+	StickyArray             []StickyInfo
+	World                   *box2d.B2World
+	ResetWorld              bool
+}
 
 func main() {
-
-	// Init Canvas stuff
-	doc := js.Global().Get("document")
-	canvasEl := doc.Call("getElementById", "mycanvas")
-	width = doc.Get("body").Get("clientWidth").Float()
-	height = doc.Get("body").Get("clientHeight").Float()
-	canvasEl.Call("setAttribute", "width", width)
-	canvasEl.Call("setAttribute", "height", height)
-	ctx = canvasEl.Call("getContext", "2d")
-	ctx.Call("scale", 1/worldScale, 1/worldScale)
-
-	done := make(chan struct{}, 0)
-
 	// seed the random generator
 	rand.Seed(time.Now().UnixNano())
 
-	world = box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
+	worldState := &WorldState{
+		WorldSettings: &WorldSettings{},
+		JSObjects:     &JSObjects{},
+	}
+	worldState.Doc = js.Global().Get("document")
 
-	world.SetContactListener(&playerContactListener{})
+	// create WorldSettings
+	worldSettings := &WorldSettings{
+		SimSpeed:   1,
+		WorldScale: 0.0125,
+		Width:      worldState.Doc.Get("body").Get("clientWidth").Float(),
+		Height:     worldState.Doc.Get("body").Get("clientHeight").Float(),
+	}
 
-	populateWorld()
+	world := box2d.MakeB2World(box2d.B2Vec2{X: 0, Y: 0})
+
+	// create WorldState
+	worldState.WorldSettings = worldSettings
+	worldState.World = &world
+
+	log.Println(worldState)
+	log.Println(worldSettings)
+
+	// Init Canvas stuff
+	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
+	worldState.Canvas.Call("setAttribute", "width", worldSettings.Width)
+	worldState.Canvas.Call("setAttribute", "height", worldSettings.Height)
+
+	worldState.Context = worldState.Canvas.Call("getContext", "2d")
+	worldState.Context.Call("scale", 1/worldSettings.WorldScale, 1/worldSettings.WorldScale)
+
+	done := make(chan struct{}, 0)
+
+	worldState.World.SetContactListener(&playerContactListener{WorldState: worldState})
+
+	populateWorld(worldState)
 
 	// handle player clicks
 	mouseDownEvt := js.NewCallback(func(args []js.Value) {
 
 		e := args[0]
-		if e.Get("target") != canvasEl {
+		if e.Get("target") != worldState.Canvas {
 			return
 		}
 
 		// only allow launch if grounded aka welded to an object
-		if playerWelded {
+		if worldState.PlayerWelded {
+			mx := e.Get("clientX").Float() * worldState.WorldScale
+			my := e.Get("clientY").Float() * worldState.WorldScale
 
-			mx := e.Get("clientX").Float() * worldScale
-			my := e.Get("clientY").Float() * worldScale
-
-			movementDx := mx - player.GetPosition().X
-			movementDy := my - player.GetPosition().Y
+			movementDx := mx - worldState.Player.GetPosition().X
+			movementDy := my - worldState.Player.GetPosition().Y
 
 			// create normalized movement vector from player to click location
 			impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
 			impulseVelocity.Normalize()
-			impulseVelocity.OperatorScalarMulInplace(getSmallestDimension() * worldScale / 2)
+			impulseVelocity.OperatorScalarMulInplace(getSmallestDimension(worldState) * worldState.WorldScale / 2)
 
-			clearPlayerJoints()
-			playerWelded = false
+			clearPlayerJoints(worldState)
+			worldState.PlayerWelded = false
 
-			if weldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
+			if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
 
 				// get current player velocity
-				playerCurrentVelocity := player.GetLinearVelocity()
+				playerCurrentVelocity := worldState.Player.GetLinearVelocity()
 
 				// calculate difference between current player velocity and player desired velocity
 				velocityDisplacement := box2d.B2Vec2{
@@ -92,10 +115,10 @@ func main() {
 					Y: impulseVelocity.Y - playerCurrentVelocity.Y}
 
 				// calculate momentum of player
-				momentum := velocityDisplacement.Length() * player.GetMass()
+				momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
 
 				// calculate magnitude of debris velocity
-				debrisVelocityDisplacementMagnitude := momentum / weldedDebris.GetMass()
+				debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
 
 				// calculate velocity displacement of debris from momentum
 				debrisVelocityDisplacement := velocityDisplacement
@@ -104,7 +127,7 @@ func main() {
 				debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
 
 				// get debris current velocity, which should match the players current velocity due to welding
-				debrisCurrentVelocity := weldedDebris.GetLinearVelocity()
+				debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
 
 				// calculate resultant from debris current velocity and debris velocity displacement
 				debrisVelocity := box2d.B2Vec2{
@@ -113,11 +136,11 @@ func main() {
 				}
 
 				// update debris velocity
-				weldedDebris.SetLinearVelocity(debrisVelocity)
+				worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
 			}
 
 			// set player velocity to player desired velocity
-			player.SetLinearVelocity(impulseVelocity)
+			worldState.Player.SetLinearVelocity(impulseVelocity)
 		}
 
 	})
@@ -126,22 +149,22 @@ func main() {
 	keyUpEvt := js.NewCallback(func(args []js.Value) {
 		e := args[0]
 		if e.Get("which").Int() == 27 {
-			resetWorld = true
+			worldState.ResetWorld = true
 		}
 	})
 	defer keyUpEvt.Release()
 
-	doc.Call("addEventListener", "keyup", keyUpEvt)
-	doc.Call("addEventListener", "mousedown", mouseDownEvt)
+	worldState.Doc.Call("addEventListener", "keyup", keyUpEvt)
+	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvt)
 
 	// Draw things
 	var renderFrame js.Callback
 	var tmark float64
 
 	// overall style
-	ctx.Set("fillStyle", "rgba(100,100,100,1)")
-	ctx.Set("strokeStyle", "rgba(100,100,100,1)")
-	ctx.Set("lineWidth", 2*worldScale)
+	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
 
 	renderFrame = js.NewCallback(func(args []js.Value) {
 		now := args[0].Float()
@@ -149,29 +172,29 @@ func main() {
 		tmark = now
 
 		// Poll window size to handle resize
-		curBodyW := doc.Get("body").Get("clientWidth").Float()
-		curBodyH := doc.Get("body").Get("clientHeight").Float()
-		if curBodyW != width || curBodyH != height {
-			width, height = curBodyW, curBodyH
-			canvasEl.Set("width", width)
-			canvasEl.Set("height", height)
+		curBodyW := worldState.Doc.Get("body").Get("clientWidth").Float()
+		curBodyH := worldState.Doc.Get("body").Get("clientHeight").Float()
+		if curBodyW != worldState.Width || curBodyH != worldState.Height {
+			worldState.Width, worldState.Height = curBodyW, curBodyH
+			worldState.Canvas.Set("width", worldState.Width)
+			worldState.Canvas.Set("height", worldState.Height)
 		}
 
-		world.Step(tdiff/1000*simSpeed, 60, 120)
+		worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
-		checkPlayerOutOfBounds()
+		checkPlayerOutOfBounds(worldState)
 
-		if resetWorld {
-			clearWorld()
-			populateWorld()
-			resetWorld = false
+		if worldState.ResetWorld {
+			clearWorld(worldState)
+			populateWorld(worldState)
+			worldState.ResetWorld = false
 		}
 
 		// check for new weld joint and execute it
-		for len(stickyArray) > 0 {
-			stickyBody := stickyArray[0]
-			stickyArray[0] = stickyArray[len(stickyArray)-1]
-			stickyArray = stickyArray[:len(stickyArray)-1]
+		for len(worldState.StickyArray) > 0 {
+			stickyBody := worldState.StickyArray[0]
+			worldState.StickyArray[0] = worldState.StickyArray[len(worldState.StickyArray)-1]
+			worldState.StickyArray = worldState.StickyArray[:len(worldState.StickyArray)-1]
 
 			worldCoordsAnchorPoint := stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{X: 0, Y: 0})
 
@@ -182,78 +205,76 @@ func main() {
 			weldJointDef.LocalAnchorA = weldJointDef.BodyA.GetLocalPoint(worldCoordsAnchorPoint)
 			weldJointDef.LocalAnchorB = weldJointDef.BodyB.GetLocalPoint(worldCoordsAnchorPoint)
 
-			if playerCollisionDetected {
-				playerJoint = world.CreateJoint(&weldJointDef)
-				playerCollisionDetected = false
-				playerWelded = true
+			if worldState.PlayerCollisionDetected {
+				worldState.PlayerJoint = worldState.World.CreateJoint(&weldJointDef)
+				worldState.PlayerCollisionDetected = false
+				worldState.PlayerWelded = true
 			} else {
-				world.CreateJoint(&weldJointDef)
+				worldState.World.CreateJoint(&weldJointDef)
 			}
 
 		}
 
-		ctx.Call("clearRect", 0, 0, width*worldScale, height*worldScale)
+		worldState.Context.Call("clearRect", 0, 0, worldState.Width*worldState.WorldScale, worldState.Height*worldState.WorldScale)
 
-		for curBody := world.GetBodyList(); curBody != nil; curBody = curBody.M_next {
+		for curBody := worldState.World.GetBodyList(); curBody != nil; curBody = curBody.M_next {
 			// ignore player and goal block, as they are styled differently
 			if curBody.GetUserData() == "player" {
 				// Player ball color
-				ctx.Set("fillStyle", "rgba(180, 180,180,1)")
-				ctx.Set("strokeStyle", "rgba(180,180,180,1)")
+				worldState.Context.Set("fillStyle", "rgba(180, 180,180,1)")
+				worldState.Context.Set("strokeStyle", "rgba(180,180,180,1)")
 			} else if curBody.GetUserData() == "goalBlock" {
 				// Goal block color
-				ctx.Set("fillStyle", "rgba(0, 255,0,1)")
-				ctx.Set("strokeStyle", "rgba(0,255,0,1)")
+				worldState.Context.Set("fillStyle", "rgba(0, 255,0,1)")
+				worldState.Context.Set("strokeStyle", "rgba(0,255,0,1)")
 			} else {
 				// color for other objects
-				ctx.Set("fillStyle", "rgba(100,100,100,1)")
-				ctx.Set("strokeStyle", "rgba(100,100,100,1)")
+				worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
+				worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
 			}
 
 			// Only one fixture for now
-			ctx.Call("save")
+			worldState.Context.Call("save")
 			ft := curBody.M_fixtureList
 			switch shape := ft.M_shape.(type) {
 			case *box2d.B2PolygonShape: // Box
 				// canvas translate
-				ctx.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
-				ctx.Call("rotate", curBody.M_xf.Q.GetAngle())
-				ctx.Call("beginPath")
-				ctx.Call("moveTo", shape.M_vertices[0].X, shape.M_vertices[0].Y)
+				worldState.Context.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
+				worldState.Context.Call("rotate", curBody.M_xf.Q.GetAngle())
+				worldState.Context.Call("beginPath")
+				worldState.Context.Call("moveTo", shape.M_vertices[0].X, shape.M_vertices[0].Y)
 				for _, v := range shape.M_vertices[1:shape.M_count] {
-					ctx.Call("lineTo", v.X, v.Y)
+					worldState.Context.Call("lineTo", v.X, v.Y)
 				}
-				ctx.Call("lineTo", shape.M_vertices[0].X, shape.M_vertices[0].Y)
-				ctx.Call("fill")
-				ctx.Call("stroke")
+				worldState.Context.Call("lineTo", shape.M_vertices[0].X, shape.M_vertices[0].Y)
+				worldState.Context.Call("fill")
+				worldState.Context.Call("stroke")
 			case *box2d.B2CircleShape:
-				ctx.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
-				ctx.Call("rotate", curBody.M_xf.Q.GetAngle())
-				ctx.Call("beginPath")
-				ctx.Call("arc", 0, 0, shape.M_radius, 0, 2*math.Pi)
-				ctx.Call("fill")
-				ctx.Call("moveTo", 0, 0)
-				ctx.Call("lineTo", 0, shape.M_radius)
-				ctx.Call("stroke")
+				worldState.Context.Call("translate", curBody.M_xf.P.X, curBody.M_xf.P.Y)
+				worldState.Context.Call("rotate", curBody.M_xf.Q.GetAngle())
+				worldState.Context.Call("beginPath")
+				worldState.Context.Call("arc", 0, 0, shape.M_radius, 0, 2*math.Pi)
+				worldState.Context.Call("fill")
+				worldState.Context.Call("moveTo", 0, 0)
+				worldState.Context.Call("lineTo", 0, shape.M_radius)
+				worldState.Context.Call("stroke")
 			}
-			ctx.Call("restore")
-
+			worldState.Context.Call("restore")
 		}
-
 		js.Global().Call("requestAnimationFrame", renderFrame)
 	})
-
 	// Start running
 	js.Global().Call("requestAnimationFrame", renderFrame)
-
 	<-done
-
 }
 
 type playerContactListener struct {
+	*WorldState
 }
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
+
+	worldState := listener.WorldState
 
 	// wait for bodies to actually contact
 	if contact.IsTouching() {
@@ -263,31 +284,27 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 			// check which fixture is the debris
 			if contact.GetFixtureA().GetBody().GetUserData() == "player" {
-				weldedDebris = contact.GetFixtureB().GetBody()
+				worldState.WeldedDebris = contact.GetFixtureB().GetBody()
 			} else {
-				weldedDebris = contact.GetFixtureA().GetBody()
+				worldState.WeldedDebris = contact.GetFixtureA().GetBody()
 			}
 
-			if weldedDebris.GetUserData() == "goalBlock" {
-				resetWorld = true
+			if worldState.WeldedDebris.GetUserData() == "goalBlock" {
+				worldState.ResetWorld = true
 				return
 			}
 
 			// If player has already collided with another object this frame
 			// ignore this collision
-			if !playerCollisionDetected && !playerWelded {
-				playerCollisionDetected = true
-				weldContact(contact)
+			if !worldState.PlayerCollisionDetected && !worldState.PlayerWelded {
+				worldState.PlayerCollisionDetected = true
+				weldContact(worldState, contact)
 			}
-
 		}
 	}
-
 }
 
-func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {
-
-}
+func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {}
 
 func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {
 
@@ -297,58 +314,60 @@ func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface
 
 }
 
-func weldContact(contact box2d.B2ContactInterface) {
+func weldContact(worldState *WorldState, contact box2d.B2ContactInterface) {
 	var worldManifold box2d.B2WorldManifold
 	contact.GetWorldManifold(&worldManifold)
 
-	stickyArray = append(stickyArray, StickyInfo{
+	worldState.StickyArray = append(worldState.StickyArray, StickyInfo{
 		bodyA: contact.GetFixtureA().GetBody(),
 		bodyB: contact.GetFixtureB().GetBody(),
 	})
 }
 
-// StickyInfo stores the two objects to be welded together after world.Step()
+// StickyInfo stores the two objects to be welded together after worldState.World.Step()
 type StickyInfo struct {
 	bodyA *box2d.B2Body
 	bodyB *box2d.B2Body
 }
 
-func checkPlayerOutOfBounds() {
-	if player.GetPosition().X < 0 || player.GetPosition().X > width*worldScale || player.GetPosition().Y < 0 || player.GetPosition().Y > height*worldScale {
-		resetWorld = true
+func checkPlayerOutOfBounds(worldState *WorldState) {
+	if worldState.Player.GetPosition().X < 0 || worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale || worldState.Player.GetPosition().Y < 0 || worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale {
+		worldState.ResetWorld = true
 	}
 }
 
-func clearWorld() {
+func clearWorld(worldState *WorldState) {
 	// clear out world of any elements
-	for joint := world.GetJointList(); joint != nil; joint = joint.GetNext() {
-		world.DestroyJoint(joint)
+	for joint := worldState.World.GetJointList(); joint != nil; joint = joint.GetNext() {
+		worldState.World.DestroyJoint(joint)
 	}
 
-	for body := world.GetBodyList(); body != nil; body = body.GetNext() {
-		world.DestroyBody(body)
-	}
-}
-
-func clearPlayerJoints() {
-	for jointEdge := player.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
-		world.DestroyJoint(jointEdge.Joint)
+	for body := worldState.World.GetBodyList(); body != nil; body = body.GetNext() {
+		worldState.World.DestroyBody(body)
 	}
 }
 
-func getSmallestDimension() float64 {
-	if width > height {
-		return height
+func clearPlayerJoints(worldState *WorldState) {
+	for jointEdge := worldState.Player.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
+		worldState.World.DestroyJoint(jointEdge.Joint)
 	}
-	return width
 }
 
-func populateWorld() {
+func getSmallestDimension(worldState *WorldState) float64 {
+	if worldState.Width > worldState.Height {
+		return worldState.Height
+	}
+	return worldState.Width
+}
+
+func populateWorld(worldState *WorldState) {
+
+	smallestDimension := getSmallestDimension(worldState)
 
 	// Player Ball
-	player = world.CreateBody(&box2d.B2BodyDef{
+	worldState.Player = worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
-		Position:     box2d.B2Vec2{X: getSmallestDimension() * worldScale / 32, Y: height*worldScale - getSmallestDimension()*worldScale/32},
+		Position:     box2d.B2Vec2{X: smallestDimension * worldState.WorldScale / 32, Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32},
 		Awake:        true,
 		Active:       true,
 		GravityScale: 1.0,
@@ -356,44 +375,44 @@ func populateWorld() {
 		UserData:     "player",
 	})
 	shape := box2d.NewB2CircleShape()
-	shape.M_radius = getSmallestDimension() * worldScale / 64
-	ft := player.CreateFixture(shape, 1)
+	shape.M_radius = smallestDimension * worldState.WorldScale / 64
+	ft := worldState.Player.CreateFixture(shape, 1)
 	ft.M_friction = 0
 	ft.M_restitution = 1
 
 	// Create launch block
-	launchBlock := world.CreateBody(&box2d.B2BodyDef{
+	launchBlock := worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_dynamicBody,
-		Position: box2d.B2Vec2{X: getSmallestDimension() * worldScale / 32, Y: height*worldScale - getSmallestDimension()*worldScale/32},
+		Position: box2d.B2Vec2{X: smallestDimension * worldState.WorldScale / 32, Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32},
 		Active:   true,
 		UserData: "launchBlock",
 	})
 	launchBlockShape := &box2d.B2PolygonShape{}
-	launchBlockShape.SetAsBox(getSmallestDimension()*worldScale/32, getSmallestDimension()*worldScale/32)
+	launchBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
 	ft = launchBlock.CreateFixture(launchBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
 
 	// Create goal block
-	goalBlock = world.CreateBody(&box2d.B2BodyDef{
+	worldState.GoalBlock = worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
-		Position: box2d.B2Vec2{X: width*worldScale - getSmallestDimension()*worldScale/32, Y: getSmallestDimension() * worldScale / 32},
+		Position: box2d.B2Vec2{X: worldState.Width*worldState.WorldScale - smallestDimension*worldState.WorldScale/32, Y: smallestDimension * worldState.WorldScale / 32},
 		Active:   true,
 		UserData: "goalBlock",
 	})
 	goalBlockShape := &box2d.B2PolygonShape{}
-	goalBlockShape.SetAsBox(getSmallestDimension()*worldScale/32, getSmallestDimension()*worldScale/32)
-	ft = goalBlock.CreateFixture(goalBlockShape, 1)
+	goalBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
+	ft = worldState.GoalBlock.CreateFixture(goalBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
 
 	// Some Random debris
 	for i := 0; i < 25; i++ {
-		obj1 := world.CreateBody(&box2d.B2BodyDef{
+		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
-				X: rand.Float64() * width * worldScale,
-				Y: rand.Float64() * height * worldScale},
+				X: rand.Float64() * worldState.Width * worldState.WorldScale,
+				Y: rand.Float64() * worldState.Height * worldState.WorldScale},
 			Angle:        rand.Float64() * 100,
 			Awake:        true,
 			Active:       true,
@@ -402,8 +421,8 @@ func populateWorld() {
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
-			rand.Float64()*getSmallestDimension()*worldScale/10,
-			rand.Float64()*getSmallestDimension()*worldScale/10)
+			rand.Float64()*smallestDimension*worldState.WorldScale/10,
+			rand.Float64()*smallestDimension*worldState.WorldScale/10)
 		ft := obj1.CreateFixture(shape, 1)
 		ft.M_friction = 1
 		ft.M_restitution = 0 // bouncy
