@@ -32,7 +32,10 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 			// If player has already collided with another object this frame
 			// ignore this collision
-			if !worldState.PlayerCollisionDetected && !worldState.PlayerWelded {
+			if !worldState.PlayerCollisionDetected &&
+				!worldState.PlayerWelded &&
+				worldState.WeldedDebris.GetUserData() != "bouncyDebris" &&
+				worldState.WeldedDebris.GetUserData() != "staticBouncyDebris" {
 				worldState.PlayerCollisionDetected = true
 				worldState.WeldContact(contact)
 			}

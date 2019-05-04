@@ -23,13 +23,18 @@ func (jso *JSObjects) Draw(body *box2d.B2Body) {
 		jso.Context.Set("fillStyle", "rgba(0, 255,0,1)")
 		jso.Context.Set("strokeStyle", "rgba(0,255,0,1)")
 	} else if body.GetUserData() == "staticDebris" || body.GetUserData() == "launchBlock" {
-		// color for other objects
 		jso.Context.Set("fillStyle", "rgba(50,50,50,1)")
 		jso.Context.Set("strokeStyle", "rgba(50,50,50,1)")
-	} else {
+	} else if body.GetUserData() == "debris" {
 		// color for other objects
 		jso.Context.Set("fillStyle", "rgba(100,100,100,1)")
 		jso.Context.Set("strokeStyle", "rgba(100,100,100,1)")
+	} else if body.GetUserData() == "staticBouncyDebris" {
+		jso.Context.Set("fillStyle", "rgba(100,0,0,1)")
+		jso.Context.Set("strokeStyle", "rgba(100,0,0,1)")
+	} else if body.GetUserData() == "bouncyDebris" {
+		jso.Context.Set("fillStyle", "rgba(200,0,0,1)")
+		jso.Context.Set("strokeStyle", "rgba(200,0,0,1)")
 	}
 	// Only one fixture for now
 	jso.Context.Call("save")

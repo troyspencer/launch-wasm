@@ -189,7 +189,7 @@ func (worldState *WorldState) CreateDebris() {
 	smallestDimension := worldState.GetSmallestDimension()
 
 	// Some Random debris
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 10; i++ {
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -199,7 +199,7 @@ func (worldState *WorldState) CreateDebris() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
-			UserData:     "weldableDebris",
+			UserData:     "debris",
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
@@ -215,7 +215,7 @@ func (worldState *WorldState) CreateStaticDebris() {
 	smallestDimension := worldState.GetSmallestDimension()
 
 	// Some Random debris
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 4; i++ {
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_staticBody,
 			Position: box2d.B2Vec2{
@@ -237,12 +237,67 @@ func (worldState *WorldState) CreateStaticDebris() {
 	}
 }
 
+
+func (worldState *WorldState) CreateStaticBouncyDebris() {
+	smallestDimension := worldState.GetSmallestDimension()
+
+	// Some Random debris
+	for i := 0; i < 3; i++ {
+		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
+			Type: box2d.B2BodyType.B2_staticBody,
+			Position: box2d.B2Vec2{
+				X: rand.Float64() * worldState.Width * worldState.WorldScale,
+				Y: rand.Float64() * worldState.Height * worldState.WorldScale},
+			Angle:        rand.Float64() * 100,
+			Awake:        true,
+			Active:       true,
+			GravityScale: 1.0,
+			UserData:     "staticBouncyDebris",
+		})
+		shape := &box2d.B2PolygonShape{}
+		shape.SetAsBox(
+			rand.Float64()*smallestDimension*worldState.WorldScale/10,
+			rand.Float64()*smallestDimension*worldState.WorldScale/10)
+		ft := obj1.CreateFixture(shape, 1)
+		ft.M_friction = 1
+		ft.M_restitution = 1 // bouncy
+	}
+}
+
+func (worldState *WorldState) CreateBouncyDebris() {
+	smallestDimension := worldState.GetSmallestDimension()
+
+	// Some Random debris
+	for i := 0; i < 3; i++ {
+		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
+			Type: box2d.B2BodyType.B2_dynamicBody,
+			Position: box2d.B2Vec2{
+				X: rand.Float64() * worldState.Width * worldState.WorldScale,
+				Y: rand.Float64() * worldState.Height * worldState.WorldScale},
+			Angle:        rand.Float64() * 100,
+			Awake:        true,
+			Active:       true,
+			GravityScale: 1.0,
+			UserData:     "bouncyDebris",
+		})
+		shape := &box2d.B2PolygonShape{}
+		shape.SetAsBox(
+			rand.Float64()*smallestDimension*worldState.WorldScale/10,
+			rand.Float64()*smallestDimension*worldState.WorldScale/10)
+		ft := obj1.CreateFixture(shape, 1)
+		ft.M_friction = 1
+		ft.M_restitution = 1 // bouncy
+	}
+}
+
 func (worldState *WorldState) Populate() {
 	worldState.CreateLaunchBlock()
 	worldState.CreatePlayer()
 	worldState.CreateGoalBlock()
 	worldState.CreateDebris()
 	worldState.CreateStaticDebris()
+	worldState.CreateBouncyDebris()
+	worldState.CreateStaticBouncyDebris()
 }
 
 func (worldState *WorldState) PushDebris(impulseVelocity box2d.B2Vec2) {
