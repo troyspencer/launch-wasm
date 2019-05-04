@@ -36,7 +36,7 @@ type WorldState struct {
 	StickyArray             []StickyInfo
 	World                   *box2d.B2World
 	ResetWorld              bool
-	TMark float64
+	TMark                   float64
 }
 
 func main() {
@@ -65,11 +65,16 @@ func main() {
 
 	// Init Canvas stuff
 	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
-	worldState.Canvas.Call("setAttribute", "width", worldSettings.Width)
-	worldState.Canvas.Call("setAttribute", "height", worldSettings.Height)
+	worldState.Canvas.Call("setAttribute", "width", worldState.Width)
+	worldState.Canvas.Call("setAttribute", "height", worldState.Height)
 
 	worldState.Context = worldState.Canvas.Call("getContext", "2d")
 	worldState.Context.Call("scale", 1/worldSettings.WorldScale, 1/worldSettings.WorldScale)
+
+	// overall style
+	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
 
 	done := make(chan struct{}, 0)
 
@@ -78,90 +83,84 @@ func main() {
 	populateWorld(worldState)
 
 	// handle player clicks
-	mouseDownEvt := js.NewCallback(func(args []js.Value) {
-
-		e := args[0]
-		if e.Get("target") != worldState.Canvas {
-			return
-		}
-
-		// only allow launch if grounded aka welded to an object
-		if worldState.PlayerWelded {
-			mx := e.Get("clientX").Float() * worldState.WorldScale
-			my := e.Get("clientY").Float() * worldState.WorldScale
-
-			movementDx := mx - worldState.Player.GetPosition().X
-			movementDy := my - worldState.Player.GetPosition().Y
-
-			// create normalized movement vector from player to click location
-			impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
-			impulseVelocity.Normalize()
-			impulseVelocity.OperatorScalarMulInplace(getSmallestDimension(worldState) * worldState.WorldScale / 2)
-
-			clearPlayerJoints(worldState)
-			worldState.PlayerWelded = false
-
-			if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
-
-				// get current player velocity
-				playerCurrentVelocity := worldState.Player.GetLinearVelocity()
-
-				// calculate difference between current player velocity and player desired velocity
-				velocityDisplacement := box2d.B2Vec2{
-					X: impulseVelocity.X - playerCurrentVelocity.X,
-					Y: impulseVelocity.Y - playerCurrentVelocity.Y}
-
-				// calculate momentum of player
-				momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
-
-				// calculate magnitude of debris velocity
-				debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
-
-				// calculate velocity displacement of debris from momentum
-				debrisVelocityDisplacement := velocityDisplacement
-				debrisVelocityDisplacement.Normalize()
-				debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
-				debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
-
-				// get debris current velocity, which should match the players current velocity due to welding
-				debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
-
-				// calculate resultant from debris current velocity and debris velocity displacement
-				debrisVelocity := box2d.B2Vec2{
-					X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
-					Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
-				}
-
-				// update debris velocity
-				worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
-			}
-
-			// set player velocity to player desired velocity
-			worldState.Player.SetLinearVelocity(impulseVelocity)
-		}
-
-	})
+	mouseDownEvt := js.NewCallback(worldState.HandleClick)
 	defer mouseDownEvt.Release()
 
-	keyUpEvt := js.NewCallback(func(args []js.Value) {
-		e := args[0]
-		if e.Get("which").Int() == 27 {
-			worldState.ResetWorld = true
-		}
-	})
+	keyUpEvt := js.NewCallback(worldState.HandleEsc)
 	defer keyUpEvt.Release()
 
 	worldState.Doc.Call("addEventListener", "keyup", keyUpEvt)
 	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvt)
 
-	// overall style
-	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
-
 	// Start running
 	js.Global().Call("requestAnimationFrame", js.NewCallback(worldState.RenderFrame))
 	<-done
+}
+
+func (worldState *WorldState) HandleEsc(args []js.Value) {
+	e := args[0]
+	if e.Get("which").Int() == 27 {
+		worldState.ResetWorld = true
+	}
+}
+
+func (worldState *WorldState) HandleClick(args []js.Value) {
+	e := args[0]
+	if e.Get("target") != worldState.Canvas {
+		return
+	}
+
+	// only allow launch if grounded aka welded to an object
+	if worldState.PlayerWelded {
+		mx := e.Get("clientX").Float() * worldState.WorldScale
+		my := e.Get("clientY").Float() * worldState.WorldScale
+
+		movementDx := mx - worldState.Player.GetPosition().X
+		movementDy := my - worldState.Player.GetPosition().Y
+
+		// create normalized movement vector from player to click location
+		impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
+		impulseVelocity.Normalize()
+		impulseVelocity.OperatorScalarMulInplace(getSmallestDimension(worldState) * worldState.WorldScale / 2)
+
+		clearPlayerJoints(worldState)
+		worldState.PlayerWelded = false
+
+		if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
+			// get current player velocity
+			playerCurrentVelocity := worldState.Player.GetLinearVelocity()
+
+			// calculate difference between current player velocity and player desired velocity
+			velocityDisplacement := box2d.B2Vec2{
+				X: impulseVelocity.X - playerCurrentVelocity.X,
+				Y: impulseVelocity.Y - playerCurrentVelocity.Y}
+
+			// calculate momentum of player
+			momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
+
+			// calculate magnitude of debris velocity
+			debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
+
+			// calculate velocity displacement of debris from momentum
+			debrisVelocityDisplacement := velocityDisplacement
+			debrisVelocityDisplacement.Normalize()
+			debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
+			debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
+
+			// get debris current velocity, which should match the players current velocity due to welding
+			debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
+
+			// calculate resultant from debris current velocity and debris velocity displacement
+			debrisVelocity := box2d.B2Vec2{
+				X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
+				Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
+			}
+			// update debris velocity
+			worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
+		}
+		// set player velocity to player desired velocity
+		worldState.Player.SetLinearVelocity(impulseVelocity)
+	}
 }
 
 func (worldState *WorldState) RenderFrame(args []js.Value) {
@@ -210,7 +209,6 @@ func (worldState *WorldState) RenderFrame(args []js.Value) {
 		} else {
 			worldState.World.CreateJoint(&weldJointDef)
 		}
-
 	}
 
 	worldState.Context.Call("clearRect", 0, 0, worldState.Width*worldState.WorldScale, worldState.Height*worldState.WorldScale)
@@ -267,7 +265,6 @@ type playerContactListener struct {
 }
 
 func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterface) {
-
 	worldState := listener.WorldState
 
 	// wait for bodies to actually contact
@@ -300,13 +297,9 @@ func (listener playerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 func (listener playerContactListener) EndContact(contact box2d.B2ContactInterface) {}
 
-func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {
+func (listener playerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {}
 
-}
-
-func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {
-
-}
+func (listener playerContactListener) PostSolve(contact box2d.B2ContactInterface, impulse *box2d.B2ContactImpulse) {}
 
 func weldContact(worldState *WorldState, contact box2d.B2ContactInterface) {
 	var worldManifold box2d.B2WorldManifold
