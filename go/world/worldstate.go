@@ -40,7 +40,10 @@ func Initialize() *WorldState {
 		WorldSettings: &WorldSettings{},
 		JSObjects:     &JSObjects{},
 	}
+
 	worldState.Doc = js.Global().Get("document")
+	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
+	worldState.Context = worldState.Canvas.Call("getContext", "2d")
 
 	// create WorldSettings
 	worldSettings := &WorldSettings{
@@ -56,18 +59,7 @@ func Initialize() *WorldState {
 	worldState.WorldSettings = worldSettings
 	worldState.World = &world
 
-	// Init Canvas stuff
-	worldState.Canvas = worldState.Doc.Call("getElementById", "mycanvas")
-	worldState.Canvas.Call("setAttribute", "width", worldState.Width)
-	worldState.Canvas.Call("setAttribute", "height", worldState.Height)
-
-	worldState.Context = worldState.Canvas.Call("getContext", "2d")
-	worldState.Context.Call("scale", 1/worldSettings.WorldScale, 1/worldSettings.WorldScale)
-
-	// overall style
-	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
-	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
+	worldState.Size()
 
 	worldState.Populate()
 
@@ -79,6 +71,30 @@ func (worldState WorldState) IsPlayerOutOfBounds() bool {
 		worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale ||
 		worldState.Player.GetPosition().Y < 0 ||
 		worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale
+}
+
+func (worldState *WorldState) Resize() {
+	// Poll window size to handle resize
+	curBodyW := worldState.Doc.Get("body").Get("clientWidth").Float()
+	curBodyH := worldState.Doc.Get("body").Get("clientHeight").Float()
+	if curBodyW != worldState.Width || curBodyH != worldState.Height {
+		worldState.Width, worldState.Height = curBodyW, curBodyH
+		worldState.Size()
+	}
+}
+
+func (worldState *WorldState) Size() {
+	// size
+	worldState.Canvas.Set("width", worldState.Width)
+	worldState.Canvas.Set("height", worldState.Height)
+
+	// scale
+	worldState.Context.Call("scale", 1/worldState.WorldScale, 1/worldState.WorldScale)
+
+	// style
+	worldState.Context.Set("fillStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("strokeStyle", "rgba(100,100,100,1)")
+	worldState.Context.Set("lineWidth", 2*worldState.WorldScale)
 }
 
 func (worldState *WorldState) Clear() {
@@ -190,6 +206,59 @@ func (worldState *WorldState) Populate() {
 	worldState.CreatePlayer()
 	worldState.CreateGoalBlock()
 	worldState.CreateDebris()
+}
+
+func (worldState *WorldState) PushDebris(impulseVelocity box2d.B2Vec2) {
+	if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
+		// get current player velocity
+		playerCurrentVelocity := worldState.Player.GetLinearVelocity()
+
+		// calculate difference between current player velocity and player desired velocity
+		velocityDisplacement := box2d.B2Vec2{
+			X: impulseVelocity.X - playerCurrentVelocity.X,
+			Y: impulseVelocity.Y - playerCurrentVelocity.Y}
+
+		// calculate momentum of player
+		momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
+
+		// calculate magnitude of debris velocity
+		debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
+
+		// calculate velocity displacement of debris from momentum
+		debrisVelocityDisplacement := velocityDisplacement
+		debrisVelocityDisplacement.Normalize()
+		debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
+		debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
+
+		// get debris current velocity, which should match the players current velocity due to welding
+		debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
+
+		// calculate resultant from debris current velocity and debris velocity displacement
+		debrisVelocity := box2d.B2Vec2{
+			X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
+			Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
+		}
+		// update debris velocity
+		worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
+	}
+}
+
+func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
+	movementDx := mx - worldState.Player.GetPosition().X
+	movementDy := my - worldState.Player.GetPosition().Y
+
+	// create normalized movement vector from player to click location
+	impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
+	impulseVelocity.Normalize()
+	impulseVelocity.OperatorScalarMulInplace(worldState.GetSmallestDimension() * worldState.WorldScale / 2)
+
+	worldState.ClearPlayerJoints()
+	worldState.PlayerWelded = false
+
+	worldState.PushDebris(impulseVelocity)
+
+	// set player velocity to player desired velocity
+	worldState.Player.SetLinearVelocity(impulseVelocity)
 }
 
 func (worldState *WorldState) WeldContact(contact box2d.B2ContactInterface) {
