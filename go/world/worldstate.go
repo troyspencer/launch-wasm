@@ -74,10 +74,11 @@ func Initialize() *WorldState {
 	return worldState
 }
 
-func (worldState WorldState) CheckPlayerOutOfBounds() {
-	if worldState.Player.GetPosition().X < 0 || worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale || worldState.Player.GetPosition().Y < 0 || worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale {
-		worldState.ResetWorld = true
-	}
+func (worldState WorldState) IsPlayerOutOfBounds() bool {
+	return worldState.Player.GetPosition().X < 0 ||
+		worldState.Player.GetPosition().X > worldState.Width*worldState.WorldScale ||
+		worldState.Player.GetPosition().Y < 0 ||
+		worldState.Player.GetPosition().Y > worldState.Height*worldState.WorldScale
 }
 
 func (worldState *WorldState) Clear() {
@@ -104,7 +105,24 @@ func (worldState WorldState) GetSmallestDimension() float64 {
 	return worldState.Width
 }
 
-func (worldState *WorldState) Populate() {
+func (worldState *WorldState) CreateLaunchBlock() {
+	smallestDimension := worldState.GetSmallestDimension()
+
+	// Create launch block
+	launchBlock := worldState.World.CreateBody(&box2d.B2BodyDef{
+		Type:     box2d.B2BodyType.B2_dynamicBody,
+		Position: box2d.B2Vec2{X: smallestDimension * worldState.WorldScale / 32, Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32},
+		Active:   true,
+		UserData: "launchBlock",
+	})
+	launchBlockShape := &box2d.B2PolygonShape{}
+	launchBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
+	ft := launchBlock.CreateFixture(launchBlockShape, 1)
+	ft.M_friction = 1
+	ft.M_restitution = 0
+}
+
+func (worldState *WorldState) CreatePlayer() {
 	smallestDimension := worldState.GetSmallestDimension()
 
 	// Player Ball
@@ -122,19 +140,10 @@ func (worldState *WorldState) Populate() {
 	ft := worldState.Player.CreateFixture(shape, 1)
 	ft.M_friction = 0
 	ft.M_restitution = 1
+}
 
-	// Create launch block
-	launchBlock := worldState.World.CreateBody(&box2d.B2BodyDef{
-		Type:     box2d.B2BodyType.B2_dynamicBody,
-		Position: box2d.B2Vec2{X: smallestDimension * worldState.WorldScale / 32, Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32},
-		Active:   true,
-		UserData: "launchBlock",
-	})
-	launchBlockShape := &box2d.B2PolygonShape{}
-	launchBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
-	ft = launchBlock.CreateFixture(launchBlockShape, 1)
-	ft.M_friction = 1
-	ft.M_restitution = 0
+func (worldState *WorldState) CreateGoalBlock() {
+	smallestDimension := worldState.GetSmallestDimension()
 
 	// Create goal block
 	worldState.GoalBlock = worldState.World.CreateBody(&box2d.B2BodyDef{
@@ -145,9 +154,13 @@ func (worldState *WorldState) Populate() {
 	})
 	goalBlockShape := &box2d.B2PolygonShape{}
 	goalBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
-	ft = worldState.GoalBlock.CreateFixture(goalBlockShape, 1)
+	ft := worldState.GoalBlock.CreateFixture(goalBlockShape, 1)
 	ft.M_friction = 1
 	ft.M_restitution = 0
+}
+
+func (worldState *WorldState) CreateDebris() {
+	smallestDimension := worldState.GetSmallestDimension()
 
 	// Some Random debris
 	for i := 0; i < 25; i++ {
@@ -172,6 +185,13 @@ func (worldState *WorldState) Populate() {
 	}
 }
 
+func (worldState *WorldState) Populate() {
+	worldState.CreateLaunchBlock()
+	worldState.CreatePlayer()
+	worldState.CreateGoalBlock()
+	worldState.CreateDebris()
+}
+
 func (worldState *WorldState) WeldContact(contact box2d.B2ContactInterface) {
 	var worldManifold box2d.B2WorldManifold
 	contact.GetWorldManifold(&worldManifold)
@@ -180,4 +200,35 @@ func (worldState *WorldState) WeldContact(contact box2d.B2ContactInterface) {
 		bodyA: contact.GetFixtureA().GetBody(),
 		bodyB: contact.GetFixtureB().GetBody(),
 	})
+}
+
+func (worldState *WorldState) Reset() {
+	worldState.Clear()
+	worldState.Populate()
+	worldState.ResetWorld = false
+}
+
+func (worldState *WorldState) WeldJoint() {
+	for len(worldState.StickyArray) > 0 {
+		stickyBody := worldState.StickyArray[0]
+		worldState.StickyArray[0] = worldState.StickyArray[len(worldState.StickyArray)-1]
+		worldState.StickyArray = worldState.StickyArray[:len(worldState.StickyArray)-1]
+
+		worldCoordsAnchorPoint := stickyBody.bodyB.GetWorldPoint(box2d.B2Vec2{X: 0, Y: 0})
+
+		weldJointDef := box2d.MakeB2WeldJointDef()
+		weldJointDef.BodyA = stickyBody.bodyA
+		weldJointDef.BodyB = stickyBody.bodyB
+		weldJointDef.ReferenceAngle = weldJointDef.BodyB.GetAngle() - weldJointDef.BodyA.GetAngle()
+		weldJointDef.LocalAnchorA = weldJointDef.BodyA.GetLocalPoint(worldCoordsAnchorPoint)
+		weldJointDef.LocalAnchorB = weldJointDef.BodyB.GetLocalPoint(worldCoordsAnchorPoint)
+
+		if worldState.PlayerCollisionDetected {
+			worldState.PlayerJoint = worldState.World.CreateJoint(&weldJointDef)
+			worldState.PlayerCollisionDetected = false
+			worldState.PlayerWelded = true
+		} else {
+			worldState.World.CreateJoint(&weldJointDef)
+		}
+	}
 }
