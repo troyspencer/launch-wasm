@@ -2,10 +2,10 @@
     "name": "launch-wasm",
     "version": "1.0.0",
     "scripts": {
-        "serve": "gulp serve",
+        "serve": "sh ./run.sh",
+        "watch": "gulp watch",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
-        "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml",
-        "dev": "dev_appserver.py server/app.yaml",
+        "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml --verbosity=debug",
         "dispatch": "gcloud app deploy --project=keen-ascent-205301 server/dispatch.yaml"
     },
     "devDependencies": {

@@ -1,21 +1,4 @@
 service: launch
-runtime: go111
+runtime: go112
 
-handlers:
-- url: /index.html
-  static_files: index.html
-  upload: index.html
-
-- url: /wasm_exec.js
-  static_files: wasm_exec.js
-  upload: wasm_exec.js
-
-- url: /main.wasm
-  static_files: main.wasm
-  upload: main.wasm
-  mime_type: application/wasm
-
-# If the path is empty, show static index.html file
-- url: /
-  static_files: index.html
-  upload: index.html
+main: .
