@@ -5,13 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/lpar/gzipped"
 )
 
 func main() {
-	fs := withIndices(gzipped.FileServer(http.Dir(".")))
+	fs := withIndices(gzipped.FileServer(http.Dir("static")))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -30,9 +29,9 @@ func main() {
 
 func withIndices(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/") {
+		if r.URL.Path == "/" {
 			r.URL.Path = r.URL.Path + "index.html"
-		}
+		} 
 		h.ServeHTTP(w, r)
 	})
 }

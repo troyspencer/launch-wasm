@@ -4,6 +4,7 @@
     "scripts": {
         "serve": "sh ./run.sh",
         "watch": "gulp watch",
+        "dev": "dev_appserver.py server/app.yaml",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
         "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml --verbosity=debug",
         "dispatch": "gcloud app deploy --project=keen-ascent-205301 server/dispatch.yaml"

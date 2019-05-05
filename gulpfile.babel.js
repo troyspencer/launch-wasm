@@ -18,7 +18,7 @@ const buildWasm = (cb) => {
 }
 
 const dockerBuildWasm = (cb) => {
-  exec('rm -f server/main.wasm.gz && rm -f server/main.wasm && env GOOS=js GOARCH=wasm go build -o server/main.wasm go/main.go && gzip server/main.wasm', (err, stdout, stderr) => {
+  exec('rm -f server/static/main.wasm.gz && rm -f server/static/main.wasm && env GOOS=js GOARCH=wasm go build -o server/static/main.wasm go/main.go && gzip -k server/static/main.wasm', (err, stdout, stderr) => {
     if (stdout) {
       console.log(stdout)
     }
