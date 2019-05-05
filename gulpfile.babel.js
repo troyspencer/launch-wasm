@@ -29,7 +29,7 @@ const dockerBuildWasm = (cb) => {
   })
 }
 
-const dockerServe = () => {
+const watch = () => {
   var folders = ["","contact/","world/"]
   for (var i = 0; i < folders.length; i++) {
     gulp.watch("./go/"+folders[i]+"*.go", dockerBuildWasm)
@@ -69,7 +69,7 @@ export {
   buildWasm,
   reloadServer,
   serve,
-  dockerServe,
+  watch,
   dockerBuildWasm
 }
 
