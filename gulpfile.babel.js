@@ -1,6 +1,7 @@
 import gulp from 'gulp';
 import browserSync from 'browser-sync';
 import { exec } from 'child_process';
+import workboxBuild from 'workbox-build';
 
 const browserSyncInstance = browserSync.create()
 
@@ -27,6 +28,51 @@ const dockerBuildWasm = (cb) => {
     }
     cb(err)
   })
+}
+
+// NOTE: This should be run *AFTER* all your assets are built
+const buildSW = () => {
+  // This will return a Promise
+  return workboxBuild.generateSW({
+    globDirectory: './server/static',
+    globPatterns: [
+      '**\/*.{html,js,json,}',
+    ],
+    swDest: './server/static/sw.js',
+    // Define runtime caching rules.
+    runtimeCaching: [{
+      // Match any request ends with .png, .jpg, .jpeg or .svg.
+      urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+
+      // Apply a cache-first strategy.
+      handler: 'CacheFirst',
+
+      options: {
+        // Use a custom cache name.
+        cacheName: 'images',
+
+        // Only cache 10 images.
+        expiration: {
+          maxEntries: 10,
+        },
+      },
+    },{
+      // Match any request ends with .png, .jpg, .jpeg or .svg.
+      urlPattern: /\.(?:wasm)$/,
+
+      // Apply a cache-first strategy.
+      handler: 'StaleWhileRevalidate',
+
+      options: {
+        // Use a custom cache name.
+        cacheName: 'refresh',
+
+        expiration: {
+          maxEntries: 10,
+        },
+      },
+    }],
+  });
 }
 
 const watch = () => {
@@ -70,7 +116,8 @@ export {
   reloadServer,
   serve,
   watch,
-  dockerBuildWasm
+  dockerBuildWasm,
+  buildSW
 }
 
 export default defaultTasks

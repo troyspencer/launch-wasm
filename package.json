@@ -1,9 +1,11 @@
 {
     "name": "launch-wasm",
     "version": "1.0.0",
+    "license": "GPL-3.0-or-later",
     "scripts": {
         "serve": "sh ./run.sh",
         "watch": "gulp watch",
+        "build": "gulp buildSW",
         "dev": "dev_appserver.py server/app.yaml",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
         "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml --verbosity=debug",
@@ -13,7 +15,8 @@
         "babel-core": "^6.26.3",
         "babel-preset-env": "^1.7.0",
         "browser-sync": "^2.26.3",
-        "gulp": "^4.0.0"
+        "gulp": "^4.0.0",
+        "workbox-build": "^4.3.1"
     },
     "babel": {
         "presets": [
