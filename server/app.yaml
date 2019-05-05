@@ -1,6 +1,4 @@
 service: launch
 runtime: go112
 
-handlers:
-- url: /.*
-  script: auto
+main: .
