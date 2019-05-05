@@ -1,4 +1,2 @@
 service: launch
 runtime: go112
-
-main: .
