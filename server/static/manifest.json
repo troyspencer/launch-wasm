@@ -1,5 +1,5 @@
 {
-    "name": "Launch WASM",
+    "name": "Launch",
     "short_name": "Launch",
     "icons": [
         {
@@ -21,6 +21,6 @@
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
-    "background_color": "#2196F3",
-    "theme_color": "#2196F3"
+    "background_color": "black",
+    "theme_color": "black"
   }
