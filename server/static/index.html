@@ -1,15 +1,30 @@
 <html>
 	<head>
-		<title>launch-wasm</title>
+		<meta name="theme-color" content="black"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel='manifest' href='/manifest.json'>
+		<title>Launch</title>
 		<meta charset="utf-8">
-		<script src="wasm_exec.js"></script>
+		<noscript>
+			WebAssembly + JavaScript is required for this game.
+		</noscript>
+		<script src="/wasm_exec.js"></script>
 		<script>
 			(async () => {
 				const go = new Go()
-				const fetchPromise = fetch('main.wasm');
+				const fetchPromise = fetch('/main.wasm');
 				const { instance } = await WebAssembly.instantiateStreaming(fetchPromise, go.importObject);
 				go.run(instance)
 			})();
+		</script>
+		<script>
+			// Check that service workers are registered
+			if ('serviceWorker' in navigator) {
+				// Use the window load event to keep the page load performant
+				window.addEventListener('load', () => {
+				navigator.serviceWorker.register('/sw.js');
+				});
+			}
 		</script>
 	<style>
 body,pre { margin:0;padding:0; }
