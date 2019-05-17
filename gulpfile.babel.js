@@ -45,7 +45,7 @@ const buildSW = () => {
       urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
 
       // Apply a cache-first strategy.
-      handler: 'CacheFirst',
+      handler: 'StaleWhileRevalidate',
 
       options: {
         // Use a custom cache name.
