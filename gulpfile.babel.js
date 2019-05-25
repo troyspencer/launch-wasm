@@ -27,6 +27,7 @@ const dockerBuildWasm = (cb) => {
       console.log(stderr);
     }
     cb(err)
+    buildSW()
   })
 }
 
@@ -76,7 +77,7 @@ const buildSW = () => {
 }
 
 const watch = () => {
-  var folders = ["","contact/","world/"]
+  var folders = ["","contact/","world/","bodies/"]
   for (var i = 0; i < folders.length; i++) {
     gulp.watch("./go/"+folders[i]+"*.go", dockerBuildWasm)
   }
