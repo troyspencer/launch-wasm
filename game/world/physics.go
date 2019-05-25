@@ -2,6 +2,7 @@ package world
 
 import (
 	"log"
+	"math"
 
 	"github.com/ByteArena/box2d"
 )
@@ -76,6 +77,11 @@ func (worldState *WorldState) PushDebris(impulseVelocity box2d.B2Vec2) {
 
 func (worldState *WorldState) breakerJumpedOff(fixture *box2d.B2Fixture, point box2d.B2Vec2, normal box2d.B2Vec2, fraction float64) float64 {
 	affectedBody := fixture.GetBody()
+	affectedPolygon, ok := fixture.GetShape().(*box2d.B2PolygonShape)
+	if !ok {
+		return 0
+	}
+
 	if worldState.BreaksInfo.AffectedByLaunch != affectedBody {
 		worldState.BreaksInfo.AffectedByLaunch = affectedBody
 		worldState.BreaksInfo.EntryPoint = point
@@ -84,6 +90,21 @@ func (worldState *WorldState) breakerJumpedOff(fixture *box2d.B2Fixture, point b
 		rayCenter := box2d.B2Vec2{
 			X: (point.X + entryPoint.X) / 2,
 			Y: (point.Y + entryPoint.Y) / 2,
+		}
+		rayAngle := math.Atan2(entryPoint.Y-point.Y, entryPoint.X-point.X)
+
+		polyVertices := affectedPolygon.M_vertices
+		for _, polyVertex := range polyVertices {
+			worldPoint := affectedBody.GetWorldPoint(polyVertex)
+			cutAngle := math.Atan2(worldPoint.Y-rayCenter.Y, worldPoint.X-rayCenter.X) - rayAngle
+			if cutAngle < math.Pi*-1 {
+				cutAngle += 2 * math.Pi
+			}
+			if cutAngle > 0 && cutAngle <= math.Pi {
+				log.Println("above")
+			} else {
+				log.Println("below")
+			}
 		}
 		log.Println(entryPoint, rayCenter, point)
 	}
