@@ -46,7 +46,8 @@ func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
 	impulseVelocity.Normalize()
 	impulseVelocity.OperatorScalarMulInplace(worldState.GetSmallestDimension() * worldState.WorldScale / 2)
 
-	worldState.ClearPlayerJoints()
+	worldState.ClearJoints(worldState.Player)
+	worldState.ClearJoints(worldState.WeldedDebris)
 	worldState.PlayerWelded = false
 
 	worldState.PushDebris(impulseVelocity)

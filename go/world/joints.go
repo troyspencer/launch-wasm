@@ -4,9 +4,19 @@ import (
 	"github.com/ByteArena/box2d"
 )
 
-func (worldState *WorldState) ClearPlayerJoints() {
-	for jointEdge := worldState.Player.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
+func (worldState *WorldState) ClearJoints(body *box2d.B2Body) {
+	if body == nil {
+		return
+	}
+
+	for jointEdge := body.GetJointList(); jointEdge != nil; jointEdge = jointEdge.Next {
 		worldState.World.DestroyJoint(jointEdge.Joint)
+	}
+}
+
+func (worldState *WorldState) ClearAllJoints() {
+	for body := worldState.World.GetBodyList(); body != nil; body = body.GetNext() {
+		worldState.ClearJoints(body)
 	}
 }
 
