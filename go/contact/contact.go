@@ -2,6 +2,7 @@ package contact
 
 import (
 	"github.com/ByteArena/box2d"
+	"github.com/troyspencer/launch-wasm/go/bodies"
 	"github.com/troyspencer/launch-wasm/go/world"
 )
 
@@ -14,28 +15,35 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 	// wait for bodies to actually contact
 	if contact.IsTouching() {
+		bodyA := contact.GetFixtureA().GetBody()
+		bodyB := contact.GetFixtureB().GetBody()
+		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
+		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
 
 		// detect player collision
-		if contact.GetFixtureB().GetBody().GetUserData() == "player" || contact.GetFixtureA().GetBody().GetUserData() == "player" {
+		if playerIsA || playerIsB {
 
-			// check which fixture is the debris
-			if contact.GetFixtureA().GetBody().GetUserData() == "player" {
-				worldState.WeldedDebris = contact.GetFixtureB().GetBody()
+			if playerIsA {
+				worldState.WeldedDebris = bodyB
 			} else {
-				worldState.WeldedDebris = contact.GetFixtureA().GetBody()
+				worldState.WeldedDebris = bodyA
 			}
 
-			if worldState.WeldedDebris.GetUserData() == "goalBlock" {
+			if _, touchingGoal := worldState.WeldedDebris.GetUserData().(*bodies.GoalBlock); touchingGoal {
 				worldState.ResetWorld = true
 				return
 			}
+
+			_, touchingBouncyDebris := worldState.WeldedDebris.GetUserData().(*bodies.BouncyDebris)
+
+			_, touchingStaticBouncyDebris := worldState.WeldedDebris.GetUserData().(*bodies.StaticBouncyDebris)
 
 			// If player has already collided with another object this frame
 			// ignore this collision
 			if !worldState.PlayerCollisionDetected &&
 				!worldState.PlayerWelded &&
-				worldState.WeldedDebris.GetUserData() != "bouncyDebris" &&
-				worldState.WeldedDebris.GetUserData() != "staticBouncyDebris" {
+				!touchingBouncyDebris &&
+				!touchingStaticBouncyDebris {
 				worldState.PlayerCollisionDetected = true
 				worldState.WeldContact(contact)
 			}

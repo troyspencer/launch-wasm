@@ -5,6 +5,7 @@ import (
 	"syscall/js"
 
 	"github.com/ByteArena/box2d"
+	"github.com/troyspencer/launch-wasm/go/bodies"
 )
 
 // StickyInfo stores the two objects to be welded together after worldState.World.Step()
@@ -127,8 +128,7 @@ func (worldState WorldState) GetSmallestDimension() float64 {
 
 func (worldState *WorldState) CreateLaunchBlock() {
 	smallestDimension := worldState.GetSmallestDimension()
-
-	// Create launch block
+	newLaunchBlock := bodies.NewLaunchBlock()
 	launchBlock := worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type: box2d.B2BodyType.B2_staticBody,
 		Position: box2d.B2Vec2{
@@ -136,7 +136,7 @@ func (worldState *WorldState) CreateLaunchBlock() {
 			Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32,
 		},
 		Active:   true,
-		UserData: "launchBlock",
+		UserData: newLaunchBlock,
 	})
 	launchBlockShape := &box2d.B2PolygonShape{}
 	launchBlockShape.SetAsBox(
@@ -150,8 +150,7 @@ func (worldState *WorldState) CreateLaunchBlock() {
 
 func (worldState *WorldState) CreatePlayer() {
 	smallestDimension := worldState.GetSmallestDimension()
-
-	// Player Ball
+	newPlayer := bodies.NewPlayer()
 	worldState.Player = worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type:         box2d.B2BodyType.B2_dynamicBody,
 		Position:     box2d.B2Vec2{X: smallestDimension * worldState.WorldScale / 32, Y: worldState.Height*worldState.WorldScale - smallestDimension*worldState.WorldScale/32},
@@ -159,7 +158,8 @@ func (worldState *WorldState) CreatePlayer() {
 		Active:       true,
 		GravityScale: 1.0,
 		Bullet:       true,
-		UserData:     "player",
+		UserData:     newPlayer,
+
 	})
 	shape := box2d.NewB2CircleShape()
 	shape.M_radius = smallestDimension * worldState.WorldScale / 64
@@ -170,13 +170,13 @@ func (worldState *WorldState) CreatePlayer() {
 
 func (worldState *WorldState) CreateGoalBlock() {
 	smallestDimension := worldState.GetSmallestDimension()
-
-	// Create goal block
+	
+	goalBlock := bodies.NewGoalBlock()
 	worldState.GoalBlock = worldState.World.CreateBody(&box2d.B2BodyDef{
 		Type:     box2d.B2BodyType.B2_kinematicBody,
 		Position: box2d.B2Vec2{X: worldState.Width*worldState.WorldScale - smallestDimension*worldState.WorldScale/32, Y: smallestDimension * worldState.WorldScale / 32},
 		Active:   true,
-		UserData: "goalBlock",
+		UserData: goalBlock,
 	})
 	goalBlockShape := &box2d.B2PolygonShape{}
 	goalBlockShape.SetAsBox(smallestDimension*worldState.WorldScale/32, smallestDimension*worldState.WorldScale/32)
@@ -190,6 +190,7 @@ func (worldState *WorldState) CreateDebris() {
 
 	// Some Random debris
 	for i := 0; i < 10; i++ {
+		newDebris := bodies.NewDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -199,7 +200,7 @@ func (worldState *WorldState) CreateDebris() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
-			UserData:     "debris",
+			UserData:     newDebris,
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
@@ -216,6 +217,7 @@ func (worldState *WorldState) CreateStaticDebris() {
 
 	// Some Random debris
 	for i := 0; i < 4; i++ {
+		newStaticDebris := bodies.NewStaticDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_staticBody,
 			Position: box2d.B2Vec2{
@@ -225,7 +227,7 @@ func (worldState *WorldState) CreateStaticDebris() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
-			UserData:     "staticDebris",
+			UserData:     newStaticDebris,
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
@@ -242,6 +244,7 @@ func (worldState *WorldState) CreateStaticBouncyDebris() {
 
 	// Some Random debris
 	for i := 0; i < 3; i++ {
+		staticBouncyDebris := bodies.NewStaticBouncyDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_staticBody,
 			Position: box2d.B2Vec2{
@@ -251,7 +254,7 @@ func (worldState *WorldState) CreateStaticBouncyDebris() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
-			UserData:     "staticBouncyDebris",
+			UserData:     staticBouncyDebris,
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(
@@ -268,6 +271,7 @@ func (worldState *WorldState) CreateBouncyDebris() {
 
 	// Some Random debris
 	for i := 0; i < 3; i++ {
+		bouncyDebris := bodies.NewBouncyDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
@@ -277,7 +281,7 @@ func (worldState *WorldState) CreateBouncyDebris() {
 			Awake:        true,
 			Active:       true,
 			GravityScale: 1.0,
-			UserData:     "bouncyDebris",
+			UserData:     bouncyDebris,
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(

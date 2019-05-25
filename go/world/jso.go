@@ -13,29 +13,17 @@ type JSObjects struct {
 	Canvas  js.Value
 }
 
+type JSDrawable interface {
+	FillStyle() string
+	StrokeStyle() string
+}
+
 func (jso *JSObjects) Draw(body *box2d.B2Body) {
-	if body.GetUserData() == "player" {
-		// Player ball color
-		jso.Context.Set("fillStyle", "rgba(180, 180,180,1)")
-		jso.Context.Set("strokeStyle", "rgba(180,180,180,1)")
-	} else if body.GetUserData() == "goalBlock" {
-		// Goal block color
-		jso.Context.Set("fillStyle", "rgba(0, 255,0,1)")
-		jso.Context.Set("strokeStyle", "rgba(0,255,0,1)")
-	} else if body.GetUserData() == "staticDebris" || body.GetUserData() == "launchBlock" {
-		jso.Context.Set("fillStyle", "rgba(50,50,50,1)")
-		jso.Context.Set("strokeStyle", "rgba(50,50,50,1)")
-	} else if body.GetUserData() == "debris" {
-		// color for other objects
-		jso.Context.Set("fillStyle", "rgba(100,100,100,1)")
-		jso.Context.Set("strokeStyle", "rgba(100,100,100,1)")
-	} else if body.GetUserData() == "staticBouncyDebris" {
-		jso.Context.Set("fillStyle", "rgba(100,0,0,1)")
-		jso.Context.Set("strokeStyle", "rgba(100,0,0,1)")
-	} else if body.GetUserData() == "bouncyDebris" {
-		jso.Context.Set("fillStyle", "rgba(200,0,0,1)")
-		jso.Context.Set("strokeStyle", "rgba(200,0,0,1)")
+	if jsDrawable, ok := body.GetUserData().(JSDrawable); ok {
+		jso.Context.Set("fillStyle", jsDrawable.FillStyle())
+		jso.Context.Set("strokeStyle", jsDrawable.StrokeStyle())
 	}
+
 	// Only one fixture for now
 	jso.Context.Call("save")
 	ft := body.M_fixtureList
