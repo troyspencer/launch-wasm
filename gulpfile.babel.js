@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import workboxBuild from 'workbox-build';
 
 const buildWasm = (cb) => {
-  exec('rm -f server/static/main.wasm.gz && rm -f server/static/main.wasm && env GOOS=js GOARCH=wasm go build -o server/static/main.wasm go/main.go && gzip -k server/static/main.wasm', (err, stdout, stderr) => {
+  exec('rm -f server/static/main.wasm.gz && rm -f server/static/main.wasm && env GOOS=js GOARCH=wasm go build -o server/static/main.wasm game/main.go && gzip -k server/static/main.wasm', (err, stdout, stderr) => {
     if (stdout) {
       console.log(stdout)
     }
@@ -67,7 +67,7 @@ const watch = () => {
   }
 }
 
-const defaultTasks = gulp.series(serve)
+const defaultTasks = gulp.series(watch)
 
 export {
   buildWasm,
