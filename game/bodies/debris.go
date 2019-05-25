@@ -13,22 +13,7 @@ func NewDebris() *Debris {
 			},
 			sticky: false,
 			bouncy: false,
+			breaks: false,
 		},
 	}
-}
-
-func (b *Debris) FillStyle() string {
-	return b.fillStyle
-}
-
-func (b *Debris) StrokeStyle() string {
-	return b.strokeStyle
-}
-
-func (b *Debris) Sticky() bool {
-	return b.sticky
-}
-
-func (b *Debris) Bouncy() bool {
-	return b.bouncy
 }

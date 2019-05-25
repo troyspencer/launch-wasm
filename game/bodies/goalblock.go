@@ -13,22 +13,7 @@ func NewGoalBlock() *GoalBlock {
 			},
 			sticky: true,
 			bouncy: false,
+			breaks: false,
 		},
 	}
-}
-
-func (b *GoalBlock) FillStyle() string {
-	return b.fillStyle
-}
-
-func (b *GoalBlock) StrokeStyle() string {
-	return b.strokeStyle
-}
-
-func (b *GoalBlock) Sticky() bool {
-	return b.sticky
-}
-
-func (b *GoalBlock) Bouncy() bool {
-	return b.bouncy
 }
