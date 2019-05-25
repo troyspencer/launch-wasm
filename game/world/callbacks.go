@@ -36,17 +36,17 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
 
+	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
+
 	resizing := worldState.Resize()
 	if resizing {
 		worldState.Resizing = true
 		worldState.LastResize = now
 	}
 	if now-worldState.LastResize > 150 && worldState.Resizing {
-		worldState.Reset()
+		worldState.ResetWorld = true
 		worldState.Resizing = false
 	}
-
-	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
 	if worldState.IsPlayerOutOfBounds() {
 		worldState.ResetWorld = true
