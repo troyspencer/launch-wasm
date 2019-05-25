@@ -2,8 +2,8 @@ package contact
 
 import (
 	"github.com/ByteArena/box2d"
-	"github.com/troyspencer/launch-wasm/go/bodies"
-	"github.com/troyspencer/launch-wasm/go/world"
+	"github.com/troyspencer/launch-wasm/game/bodies"
+	"github.com/troyspencer/launch-wasm/game/world"
 )
 
 type Sticker interface {

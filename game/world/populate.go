@@ -4,7 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/ByteArena/box2d"
-	"github.com/troyspencer/launch-wasm/go/bodies"
+	"github.com/troyspencer/launch-wasm/game/bodies"
 )
 
 func (worldState *WorldState) Populate() {

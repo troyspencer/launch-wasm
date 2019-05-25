@@ -5,8 +5,8 @@ import (
 	"syscall/js"
 	"time"
 
-	"github.com/troyspencer/launch-wasm/go/contact"
-	"github.com/troyspencer/launch-wasm/go/world"
+	"github.com/troyspencer/launch-wasm/game/contact"
+	"github.com/troyspencer/launch-wasm/game/world"
 )
 
 func main() {
