@@ -6,6 +6,10 @@ import (
 	"github.com/troyspencer/launch-wasm/go/world"
 )
 
+type Sticker interface {
+	Sticky() bool
+}
+
 type PlayerContactListener struct {
 	*world.WorldState
 }
@@ -15,8 +19,17 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 	// wait for bodies to actually contact
 	if contact.IsTouching() {
+
 		bodyA := contact.GetFixtureA().GetBody()
 		bodyB := contact.GetFixtureB().GetBody()
+		// check for generally sticky objects
+		_, stickyA := bodyA.GetUserData().(Sticker)
+		_, stickyB := bodyA.GetUserData().(Sticker)
+
+		if stickyA || stickyB {
+			worldState.WeldContact(contact)
+		}
+
 		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
 		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
 
@@ -45,7 +58,6 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 				!touchingBouncyDebris &&
 				!touchingStaticBouncyDebris {
 				worldState.PlayerCollisionDetected = true
-				worldState.WeldContact(contact)
 			}
 		}
 	}
