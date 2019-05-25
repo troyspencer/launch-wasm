@@ -35,12 +35,12 @@ func (worldState *WorldState) WeldJoint() {
 		weldJointDef.LocalAnchorA = weldJointDef.BodyA.GetLocalPoint(worldCoordsAnchorPoint)
 		weldJointDef.LocalAnchorB = weldJointDef.BodyB.GetLocalPoint(worldCoordsAnchorPoint)
 
+		weldJoint := worldState.World.CreateJoint(&weldJointDef)
+
 		if worldState.PlayerCollisionDetected {
-			worldState.PlayerJoint = worldState.World.CreateJoint(&weldJointDef)
+			worldState.PlayerJoint = weldJoint
 			worldState.PlayerCollisionDetected = false
 			worldState.PlayerWelded = true
-		} else {
-			worldState.World.CreateJoint(&weldJointDef)
 		}
 	}
 }
