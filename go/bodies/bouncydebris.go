@@ -1,22 +1,29 @@
 package bodies
 
 type BouncyDebris struct {
-	jsColors JSColors
+	Body
 }
 
 func NewBouncyDebris() *BouncyDebris {
 	return &BouncyDebris{
-		jsColors: JSColors{
-			FillStyle:   "rgba(200,0,0,1)",
-			StrokeStyle: "rgba(200,0,0,1)",
+		Body: Body{
+			JSColors: JSColors{
+				fillStyle:   "rgba(200,0,0,1)",
+				strokeStyle: "rgba(200,0,0,1)",
+			},
+			sticky: false,
 		},
 	}
 }
 
-func (p *BouncyDebris) FillStyle() string {
-	return p.jsColors.FillStyle
+func (b *BouncyDebris) FillStyle() string {
+	return b.fillStyle
 }
 
-func (p *BouncyDebris) StrokeStyle() string {
-	return p.jsColors.StrokeStyle
+func (b *BouncyDebris) StrokeStyle() string {
+	return b.strokeStyle
+}
+
+func (b *BouncyDebris) Sticky() bool {
+	return b.sticky
 }

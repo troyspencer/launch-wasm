@@ -1,22 +1,29 @@
 package bodies
 
 type StaticDebris struct {
-	jsColors JSColors
+	Body
 }
 
 func NewStaticDebris() *StaticDebris {
 	return &StaticDebris{
-		jsColors: JSColors{
-			FillStyle:   "rgba(50,50,50,1)",
-			StrokeStyle: "rgba(50,50,50,1)",
+		Body: Body{
+			JSColors: JSColors{
+				fillStyle:   "rgba(50,50,50,1)",
+				strokeStyle: "rgba(50,50,50,1)",
+			},
+			sticky: false,
 		},
 	}
 }
 
-func (p *StaticDebris) FillStyle() string {
-	return p.jsColors.FillStyle
+func (b *StaticDebris) FillStyle() string {
+	return b.fillStyle
 }
 
-func (p *StaticDebris) StrokeStyle() string {
-	return p.jsColors.StrokeStyle
+func (b *StaticDebris) StrokeStyle() string {
+	return b.strokeStyle
+}
+
+func (b *StaticDebris) Sticky() bool {
+	return b.sticky
 }

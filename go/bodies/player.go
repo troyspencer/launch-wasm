@@ -1,22 +1,29 @@
 package bodies
 
 type Player struct {
-	jsColors JSColors
+	Body
 }
 
 func NewPlayer() *Player {
 	return &Player{
-		jsColors: JSColors{
-			FillStyle:   "rgba(180, 180,180,1)",
-			StrokeStyle: "rgba(180, 180,180,1)",
+		Body: Body{
+			JSColors: JSColors{
+				fillStyle:   "rgba(180, 180,180,1)",
+				strokeStyle: "rgba(180, 180,180,1)",
+			},
+			sticky: true,
 		},
 	}
 }
 
-func (p *Player) FillStyle() string {
-	return p.jsColors.FillStyle
+func (b *Player) FillStyle() string {
+	return b.fillStyle
 }
 
-func (p *Player) StrokeStyle() string {
-	return p.jsColors.StrokeStyle
+func (b *Player) StrokeStyle() string {
+	return b.strokeStyle
+}
+
+func (b *Player) Sticky() bool {
+	return b.sticky
 }

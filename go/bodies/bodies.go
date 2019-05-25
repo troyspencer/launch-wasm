@@ -1,6 +1,11 @@
 package bodies
 
 type JSColors struct {
-	FillStyle   string
-	StrokeStyle string
+	fillStyle   string
+	strokeStyle string
+}
+
+type Body struct {
+	JSColors
+	sticky bool
 }

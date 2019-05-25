@@ -1,22 +1,29 @@
 package bodies
 
 type GoalBlock struct {
-	jsColors JSColors
+	Body
 }
 
 func NewGoalBlock() *GoalBlock {
 	return &GoalBlock{
-		jsColors: JSColors{
-			FillStyle:   "rgba(0, 255,0,1)",
-			StrokeStyle: "rgba(0, 255,0,1)",
+		Body: Body{
+			JSColors: JSColors{
+				fillStyle:   "rgba(0, 255,0,1)",
+				strokeStyle: "rgba(0, 255,0,1)",
+			},
+			sticky: true,
 		},
 	}
 }
 
-func (p *GoalBlock) FillStyle() string {
-	return p.jsColors.FillStyle
+func (b *GoalBlock) FillStyle() string {
+	return b.fillStyle
 }
 
-func (p *GoalBlock) StrokeStyle() string {
-	return p.jsColors.StrokeStyle
+func (b *GoalBlock) StrokeStyle() string {
+	return b.strokeStyle
+}
+
+func (b *GoalBlock) Sticky() bool {
+	return b.sticky
 }

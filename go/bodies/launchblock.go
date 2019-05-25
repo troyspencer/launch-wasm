@@ -17,3 +17,7 @@ func (lb *LaunchBlock) FillStyle() string {
 func (lb *LaunchBlock) StrokeStyle() string {
 	return lb.StaticDebris.StrokeStyle()
 }
+
+func (lb *LaunchBlock) Sticky() bool {
+	return lb.StaticDebris.Sticky()
+}
