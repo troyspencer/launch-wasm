@@ -12,6 +12,7 @@ func NewStickyDebris() *StickyDebris {
 				strokeStyle: "rgb(252, 241, 37)",
 			},
 			sticky: true,
+			bouncy: false,
 		},
 	}
 }
@@ -26,4 +27,8 @@ func (b *StickyDebris) StrokeStyle() string {
 
 func (b *StickyDebris) Sticky() bool {
 	return b.sticky
+}
+
+func (b *StickyDebris) Bouncy() bool {
+	return b.bouncy
 }

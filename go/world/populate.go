@@ -15,6 +15,7 @@ func (worldState *WorldState) Populate() {
 	worldState.CreateStaticDebris()
 	worldState.CreateBouncyDebris()
 	worldState.CreateStaticBouncyDebris()
+	worldState.CreateStickyDebris()
 }
 
 func (worldState *WorldState) CreateLaunchBlock() {
@@ -91,6 +92,33 @@ func (worldState *WorldState) CreateDebris() {
 			Active:       true,
 			GravityScale: 1.0,
 			UserData:     newDebris,
+		})
+		shape := &box2d.B2PolygonShape{}
+		shape.SetAsBox(
+			rand.Float64()*smallestDimension*worldState.WorldScale/10,
+			rand.Float64()*smallestDimension*worldState.WorldScale/10)
+		ft := obj1.CreateFixture(shape, 1)
+		ft.M_friction = 1
+		ft.M_restitution = 0 // bouncy
+	}
+}
+
+func (worldState *WorldState) CreateStickyDebris() {
+	smallestDimension := worldState.GetSmallestDimension()
+
+	// Some Random sticky debris
+	for i := 0; i < 5; i++ {
+		newStickyDebris := bodies.NewStickyDebris()
+		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
+			Type: box2d.B2BodyType.B2_dynamicBody,
+			Position: box2d.B2Vec2{
+				X: rand.Float64() * worldState.Width * worldState.WorldScale,
+				Y: rand.Float64() * worldState.Height * worldState.WorldScale},
+			Angle:        rand.Float64() * 100,
+			Awake:        true,
+			Active:       true,
+			GravityScale: 1.0,
+			UserData:     newStickyDebris,
 		})
 		shape := &box2d.B2PolygonShape{}
 		shape.SetAsBox(

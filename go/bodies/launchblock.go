@@ -10,14 +10,18 @@ func NewLaunchBlock() *LaunchBlock {
 	}
 }
 
-func (lb *LaunchBlock) FillStyle() string {
-	return lb.StaticDebris.FillStyle()
+func (b *LaunchBlock) FillStyle() string {
+	return b.StaticDebris.FillStyle()
 }
 
-func (lb *LaunchBlock) StrokeStyle() string {
-	return lb.StaticDebris.StrokeStyle()
+func (b *LaunchBlock) StrokeStyle() string {
+	return b.StaticDebris.StrokeStyle()
 }
 
-func (lb *LaunchBlock) Sticky() bool {
-	return lb.StaticDebris.Sticky()
+func (b *LaunchBlock) Sticky() bool {
+	return b.StaticDebris.Sticky()
+}
+
+func (b *LaunchBlock) Bouncy() bool {
+	return b.StaticDebris.Bouncy()
 }

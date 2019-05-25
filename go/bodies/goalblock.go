@@ -12,6 +12,7 @@ func NewGoalBlock() *GoalBlock {
 				strokeStyle: "rgba(0, 255,0,1)",
 			},
 			sticky: true,
+			bouncy: false,
 		},
 	}
 }
@@ -26,4 +27,8 @@ func (b *GoalBlock) StrokeStyle() string {
 
 func (b *GoalBlock) Sticky() bool {
 	return b.sticky
+}
+
+func (b *GoalBlock) Bouncy() bool {
+	return b.bouncy
 }

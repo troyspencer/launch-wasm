@@ -12,6 +12,7 @@ func NewPlayer() *Player {
 				strokeStyle: "rgba(180, 180,180,1)",
 			},
 			sticky: true,
+			bouncy: false,
 		},
 	}
 }
@@ -26,4 +27,8 @@ func (b *Player) StrokeStyle() string {
 
 func (b *Player) Sticky() bool {
 	return b.sticky
+}
+
+func (b *Player) Bouncy() bool {
+	return b.bouncy
 }

@@ -10,6 +10,10 @@ type Sticker interface {
 	Sticky() bool
 }
 
+type Bouncer interface {
+	Bouncy() bool
+}
+
 type PlayerContactListener struct {
 	*world.WorldState
 }
@@ -22,20 +26,46 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 		bodyA := contact.GetFixtureA().GetBody()
 		bodyB := contact.GetFixtureB().GetBody()
-		// check for generally sticky objects
-		_, stickyA := bodyA.GetUserData().(Sticker)
-		_, stickyB := bodyA.GetUserData().(Sticker)
 
-		if stickyA || stickyB {
-			worldState.WeldContact(contact)
+		fixtureBodies := []*box2d.B2Body{bodyA, bodyB}
+
+		// check for bounce first, nothing welds to bouncy
+		bouncy := false
+
+		for _, fixtureBody := range fixtureBodies {
+			if bouncer, ok := fixtureBody.GetUserData().(Bouncer); ok {
+				if bouncer.Bouncy() {
+					bouncy = true
+				}
+			}
 		}
+
+		if bouncy {
+			return
+		}
+
+		// check for sticky
+		sticky := false
+
+		for _, fixtureBody := range fixtureBodies {
+			if sticker, ok := fixtureBody.GetUserData().(Sticker); ok {
+				if sticker.Sticky() {
+					sticky = true
+				}
+			}
+		}
+
+		if !sticky {
+			return
+		}
+
+		worldState.WeldContact(contact)
 
 		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
 		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
 
 		// detect player collision
 		if playerIsA || playerIsB {
-
 			if playerIsA {
 				worldState.WeldedDebris = bodyB
 			} else {
@@ -47,19 +77,15 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 				return
 			}
 
-			_, touchingBouncyDebris := worldState.WeldedDebris.GetUserData().(*bodies.BouncyDebris)
-
-			_, touchingStaticBouncyDebris := worldState.WeldedDebris.GetUserData().(*bodies.StaticBouncyDebris)
-
 			// If player has already collided with another object this frame
 			// ignore this collision
 			if !worldState.PlayerCollisionDetected &&
-				!worldState.PlayerWelded &&
-				!touchingBouncyDebris &&
-				!touchingStaticBouncyDebris {
+				!worldState.PlayerWelded {
 				worldState.PlayerCollisionDetected = true
 			}
+
 		}
+
 	}
 }
 
