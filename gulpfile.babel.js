@@ -61,9 +61,9 @@ const buildSW = () => {
 }
 
 const watch = () => {
-  var folders = ["","contact/","world/","bodies/"]
+  var folders = ["","/contact","/world","/bodies"]
   for (var i = 0; i < folders.length; i++) {
-    gulp.watch("./game/"+folders[i]+"*.go", buildWasm)
+    gulp.watch("./game"+folders[i]+"/*.go", buildWasm)
   }
 }
 
