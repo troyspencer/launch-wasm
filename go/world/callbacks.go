@@ -1,7 +1,6 @@
 package world
 
 import (
-	"log"
 	"syscall/js"
 )
 
@@ -19,7 +18,6 @@ func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interf
 		return nil
 	}
 
-	log.Println("clicked")
 	// only allow launch if grounded aka welded to an object
 	if worldState.PlayerWelded {
 		mx := e.Get("clientX").Float() * worldState.WorldScale
