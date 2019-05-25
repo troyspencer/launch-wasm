@@ -24,6 +24,10 @@ func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interf
 		my := e.Get("clientY").Float() * worldState.WorldScale
 		worldState.LaunchPlayer(mx, my)
 	}
+
+	// always clear joints on click to prevent sticking to multiple debris
+	worldState.ClearJoints(worldState.Player)
+
 	return nil
 }
 
