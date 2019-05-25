@@ -1,40 +1,13 @@
 package world
 
-import "github.com/ByteArena/box2d"
+import (
+	"log"
 
-func (worldState *WorldState) PushDebris(impulseVelocity box2d.B2Vec2) {
-	if worldState.WeldedDebris.GetType() == box2d.B2BodyType.B2_dynamicBody {
-		// get current player velocity
-		playerCurrentVelocity := worldState.Player.GetLinearVelocity()
+	"github.com/ByteArena/box2d"
+)
 
-		// calculate difference between current player velocity and player desired velocity
-		velocityDisplacement := box2d.B2Vec2{
-			X: impulseVelocity.X - playerCurrentVelocity.X,
-			Y: impulseVelocity.Y - playerCurrentVelocity.Y}
-
-		// calculate momentum of player
-		momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
-
-		// calculate magnitude of debris velocity
-		debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
-
-		// calculate velocity displacement of debris from momentum
-		debrisVelocityDisplacement := velocityDisplacement
-		debrisVelocityDisplacement.Normalize()
-		debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
-		debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
-
-		// get debris current velocity, which should match the players current velocity due to welding
-		debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
-
-		// calculate resultant from debris current velocity and debris velocity displacement
-		debrisVelocity := box2d.B2Vec2{
-			X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
-			Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
-		}
-		// update debris velocity
-		worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
-	}
+type Breaker interface {
+	Breaks() bool
 }
 
 func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
@@ -54,4 +27,75 @@ func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
 
 	// set player velocity to player desired velocity
 	worldState.Player.SetLinearVelocity(impulseVelocity)
+}
+
+func (worldState *WorldState) PushDebris(impulseVelocity box2d.B2Vec2) {
+	if worldState.WeldedDebris.GetType() != box2d.B2BodyType.B2_dynamicBody {
+		return
+	}
+
+	// get current player velocity
+	playerCurrentVelocity := worldState.Player.GetLinearVelocity()
+
+	// calculate difference between current player velocity and player desired velocity
+	velocityDisplacement := box2d.B2Vec2{
+		X: impulseVelocity.X - playerCurrentVelocity.X,
+		Y: impulseVelocity.Y - playerCurrentVelocity.Y}
+
+	// calculate momentum of player
+	momentum := velocityDisplacement.Length() * worldState.Player.GetMass()
+
+	// calculate magnitude of debris velocity
+	debrisVelocityDisplacementMagnitude := momentum / worldState.WeldedDebris.GetMass()
+
+	// calculate velocity displacement of debris from momentum
+	debrisVelocityDisplacement := velocityDisplacement
+	debrisVelocityDisplacement.Normalize()
+	debrisVelocityDisplacement.OperatorScalarMulInplace(debrisVelocityDisplacementMagnitude)
+	debrisVelocityDisplacement = debrisVelocityDisplacement.OperatorNegate()
+
+	// get debris current velocity, which should match the players current velocity due to welding
+	debrisCurrentVelocity := worldState.WeldedDebris.GetLinearVelocity()
+
+	// calculate resultant from debris current velocity and debris velocity displacement
+	debrisVelocity := box2d.B2Vec2{
+		X: debrisCurrentVelocity.X + debrisVelocityDisplacement.X,
+		Y: debrisCurrentVelocity.Y + debrisVelocityDisplacement.Y,
+	}
+
+	if breaker, ok := worldState.WeldedDebris.GetUserData().(Breaker); ok {
+		if breaker.Breaks() {
+			worldState.Slice(worldState.WeldedDebris, debrisVelocity)
+		}
+	} else {
+		// update debris velocity
+		worldState.WeldedDebris.SetLinearVelocity(debrisVelocity)
+	}
+
+}
+
+func (worldState *WorldState) breakerJumpedOff(fixture *box2d.B2Fixture, point box2d.B2Vec2, normal box2d.B2Vec2, fraction float64) float64 {
+	affectedBody := fixture.GetBody()
+	if worldState.BreaksInfo.AffectedByLaunch != affectedBody {
+		worldState.BreaksInfo.AffectedByLaunch = affectedBody
+		worldState.BreaksInfo.EntryPoint = point
+	} else {
+		entryPoint := worldState.BreaksInfo.EntryPoint
+		rayCenter := box2d.B2Vec2{
+			X: (point.X + entryPoint.X) / 2,
+			Y: (point.Y + entryPoint.Y) / 2,
+		}
+		log.Println(entryPoint, rayCenter, point)
+	}
+	return 1
+}
+
+func (worldState *WorldState) Slice(body *box2d.B2Body, impulse box2d.B2Vec2) {
+	sliceBeginning := worldState.Player.GetWorldCenter()
+	sliceEnd := box2d.B2Vec2{
+		X: sliceBeginning.X + impulse.X,
+		Y: sliceBeginning.Y + impulse.Y,
+	}
+	worldState.World.RayCast(worldState.breakerJumpedOff, sliceBeginning, sliceEnd)
+	worldState.World.RayCast(worldState.breakerJumpedOff, sliceEnd, sliceBeginning)
 }

@@ -12,6 +12,11 @@ type StickyInfo struct {
 	bodyB *box2d.B2Body
 }
 
+type BreaksInfo struct {
+	AffectedByLaunch *box2d.B2Body
+	EntryPoint       box2d.B2Vec2
+}
+
 type WorldSettings struct {
 	SimSpeed   float64
 	Height     float64
@@ -31,9 +36,10 @@ type WorldState struct {
 	PlayerCollisionDetected bool
 	PlayerWelded            bool
 	StickyArray             []StickyInfo
-	World                   *box2d.B2World
-	ResetWorld              bool
-	TMark                   float64
+	BreaksInfo
+	World      *box2d.B2World
+	ResetWorld bool
+	TMark      float64
 }
 
 func Initialize() *WorldState {
