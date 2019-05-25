@@ -81,7 +81,7 @@ func (worldState *WorldState) CreateDebris() {
 	smallestDimension := worldState.GetSmallestDimension()
 
 	// Some Random debris
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		newDebris := bodies.NewDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
@@ -108,7 +108,7 @@ func (worldState *WorldState) CreateBreakableDebris() {
 	smallestDimension := worldState.GetSmallestDimension()
 
 	// Some Random debris
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		newBreakableDebris := bodies.NewBreakableDebris()
 		obj1 := worldState.World.CreateBody(&box2d.B2BodyDef{
 			Type: box2d.B2BodyType.B2_dynamicBody,
