@@ -59,13 +59,20 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 			return
 		}
 
-		worldState.WeldContact(contact)
-
 		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
 		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
 
+		playerContact := playerIsA || playerIsB
+
+		// Prevent a welded player from welding again
+		if playerContact && worldState.PlayerWelded && sticky {
+			return
+		}
+
+		worldState.WeldContact(contact)
+
 		// detect player collision
-		if playerIsA || playerIsB {
+		if playerContact {
 			if playerIsA {
 				worldState.WeldedDebris = bodyB
 			} else {
