@@ -19,7 +19,7 @@ func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interf
 	}
 
 	// only allow launch if grounded aka welded to an object
-	if worldState.PlayerWelded {
+	if worldState.PlayerWelded || worldState.PlayerAbsorbed {
 		mx := e.Get("clientX").Float() * worldState.WorldScale
 		my := e.Get("clientY").Float() * worldState.WorldScale
 		worldState.LaunchPlayer(mx, my)

@@ -245,6 +245,7 @@ func (worldState *WorldState) CreateWater() {
 	for i := 0; i < 6; i++ {
 		newWater := bodies.NewWater()
 		newBody := worldState.World.CreateBody(&box2d.B2BodyDef{
+
 			Type: box2d.B2BodyType.B2_dynamicBody,
 			Position: box2d.B2Vec2{
 				X: rand.Float64() * worldState.Width * worldState.WorldScale,
@@ -256,9 +257,10 @@ func (worldState *WorldState) CreateWater() {
 			UserData:     newWater,
 		})
 		shape := box2d.NewB2CircleShape()
-		shape.M_radius = rand.Float64() * smallestDimension * worldState.WorldScale / 10
+		shape.M_radius = rand.Float64() * smallestDimension * worldState.WorldScale / 8
 		ft := newBody.CreateFixture(shape, 1)
-		ft.M_friction = 0
-		ft.M_restitution = 1
+		ft.M_isSensor = true
+		ft.M_friction = 1
+		ft.M_restitution = 0
 	}
 }

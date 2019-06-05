@@ -35,6 +35,7 @@ type WorldState struct {
 	PlayerJoint             box2d.B2JointInterface
 	PlayerCollisionDetected bool
 	PlayerWelded            bool
+	PlayerAbsorbed          bool
 	StickyArray             []StickyInfo
 	BreaksInfo
 	World      *box2d.B2World

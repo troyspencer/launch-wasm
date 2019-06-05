@@ -14,6 +14,10 @@ type Bouncer interface {
 	Bouncy() bool
 }
 
+type Absorber interface {
+	Absorbs() bool
+}
+
 type PlayerContactListener struct {
 	*world.WorldState
 }
@@ -46,7 +50,6 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 
 		// check for sticky
 		sticky := false
-
 		for _, fixtureBody := range fixtureBodies {
 			if sticker, ok := fixtureBody.GetUserData().(Sticker); ok {
 				if sticker.Sticky() {
@@ -59,10 +62,35 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 			return
 		}
 
+		// check for player
 		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
 		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
 
 		playerContact := playerIsA || playerIsB
+
+		// check for absorbs
+		absorbs := false
+		for _, fixtureBody := range fixtureBodies {
+			if absorber, ok := fixtureBody.GetUserData().(Absorber); ok {
+				if absorber.Absorbs() {
+					absorbs = true
+				}
+			}
+		}
+
+		if absorbs {
+			for _, fixtureBody := range fixtureBodies {
+				fixtureBody.SetLinearDamping(0.4)
+			}
+			if playerContact {
+				worldState.PlayerAbsorbed = true
+				playerVelocity := worldState.Player.GetLinearVelocity()
+				playerVelocity.OperatorScalarMulInplace(0.5)
+				worldState.Player.SetLinearVelocity(playerVelocity)
+				return
+			}
+			return
+		}
 
 		// Prevent a welded player from welding again
 		if playerContact && worldState.PlayerWelded && sticky {
@@ -96,7 +124,41 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 	}
 }
 
-func (listener PlayerContactListener) EndContact(contact box2d.B2ContactInterface) {}
+func (listener PlayerContactListener) EndContact(contact box2d.B2ContactInterface) {
+	worldState := listener.WorldState
+
+	if !contact.IsTouching() {
+		bodyA := contact.GetFixtureA().GetBody()
+		bodyB := contact.GetFixtureB().GetBody()
+
+		fixtureBodies := []*box2d.B2Body{bodyA, bodyB}
+
+		// check for player
+		_, playerIsA := bodyA.GetUserData().(*bodies.Player)
+		_, playerIsB := bodyB.GetUserData().(*bodies.Player)
+
+		playerContact := playerIsA || playerIsB
+
+		// check for absorbs
+		absorbs := false
+		for _, fixtureBody := range fixtureBodies {
+			if absorber, ok := fixtureBody.GetUserData().(Absorber); ok {
+				if absorber.Absorbs() {
+					absorbs = true
+				}
+			}
+		}
+
+		if absorbs && playerContact {
+			worldState.Player.SetLinearDamping(0)
+			playerVelocity := worldState.Player.GetLinearVelocity()
+			playerVelocity.OperatorScalarMulInplace(2)
+			worldState.Player.SetLinearVelocity(playerVelocity)
+			worldState.PlayerAbsorbed = false
+		}
+
+	}
+}
 
 func (listener PlayerContactListener) PreSolve(contact box2d.B2ContactInterface, oldManifold box2d.B2Manifold) {
 }

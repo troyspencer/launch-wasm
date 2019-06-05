@@ -33,6 +33,10 @@ func (b *Body) Breaks() bool {
 	return b.breaks
 }
 
+func (b *Body) Absorbs() bool {
+	return b.absorbs
+}
+
 type Bodier interface {
 	JSDrawable
 	Sticker
