@@ -83,10 +83,13 @@ func (listener PlayerContactListener) BeginContact(contact box2d.B2ContactInterf
 				fixtureBody.SetLinearDamping(0.4)
 			}
 			if playerContact {
-				worldState.PlayerAbsorbed = true
-				playerVelocity := worldState.Player.GetLinearVelocity()
-				playerVelocity.OperatorScalarMulInplace(0.5)
-				worldState.Player.SetLinearVelocity(playerVelocity)
+				if worldState.AbsorbCount == 0 {
+					// player entering absorber
+					playerVelocity := worldState.Player.GetLinearVelocity()
+					playerVelocity.OperatorScalarMulInplace(0.5)
+					worldState.Player.SetLinearVelocity(playerVelocity)
+				}
+				worldState.AbsorbCount++
 				return
 			}
 			return
@@ -150,13 +153,15 @@ func (listener PlayerContactListener) EndContact(contact box2d.B2ContactInterfac
 		}
 
 		if absorbs && playerContact {
-			worldState.Player.SetLinearDamping(0)
-			playerVelocity := worldState.Player.GetLinearVelocity()
-			playerVelocity.OperatorScalarMulInplace(2)
-			worldState.Player.SetLinearVelocity(playerVelocity)
-			worldState.PlayerAbsorbed = false
+			worldState.AbsorbCount--
+			if worldState.AbsorbCount == 0 {
+				// player exiting all absorbers
+				worldState.Player.SetLinearDamping(0)
+				playerVelocity := worldState.Player.GetLinearVelocity()
+				playerVelocity.OperatorScalarMulInplace(2)
+				worldState.Player.SetLinearVelocity(playerVelocity)
+			}
 		}
-
 	}
 }
 

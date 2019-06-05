@@ -19,7 +19,7 @@ func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
 	impulseVelocity := box2d.B2Vec2{X: movementDx, Y: movementDy}
 	impulseVelocity.Normalize()
 	impulseVelocity.OperatorScalarMulInplace(worldState.GetSmallestDimension() * worldState.WorldScale / 2)
-	if worldState.PlayerAbsorbed {
+	if worldState.AbsorbCount > 0 {
 		impulseVelocity.OperatorScalarMulInplace(0.5)
 	}
 
