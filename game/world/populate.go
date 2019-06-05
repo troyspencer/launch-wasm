@@ -11,7 +11,6 @@ func (worldState *WorldState) Populate() {
 	worldState.CreateLaunchBlock()
 	worldState.CreatePlayer()
 	worldState.CreateGoalBlock()
-	worldState.CreateBreakableDebris()
 	worldState.CreateDebris()
 	worldState.CreateStaticDebris()
 	worldState.CreateBouncyDebris()
