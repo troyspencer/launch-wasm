@@ -11,9 +11,10 @@ func NewBouncyDebris() *BouncyDebris {
 				fillStyle:   "rgba(200,0,0,1)",
 				strokeStyle: "rgba(200,0,0,1)",
 			},
-			sticky: false,
-			bouncy: true,
-			breaks: false,
+			sticky:  false,
+			bouncy:  true,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
 }

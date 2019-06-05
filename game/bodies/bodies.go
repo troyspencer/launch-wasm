@@ -7,9 +7,10 @@ type JSColors struct {
 
 type Body struct {
 	JSColors
-	sticky bool
-	bouncy bool
-	breaks bool
+	sticky  bool
+	bouncy  bool
+	breaks  bool
+	absorbs bool
 }
 
 func (b *Body) FillStyle() string {
@@ -32,11 +33,16 @@ func (b *Body) Breaks() bool {
 	return b.breaks
 }
 
+func (b *Body) Absorbs() bool {
+	return b.absorbs
+}
+
 type Bodier interface {
 	JSDrawable
 	Sticker
 	Bouncer
 	Breaker
+	Absorber
 }
 
 type JSDrawable interface {
@@ -54,4 +60,8 @@ type Bouncer interface {
 
 type Breaker interface {
 	Breaks() bool
+}
+
+type Absorber interface {
+	Absorbs() bool
 }

@@ -36,6 +36,7 @@ type WorldState struct {
 	PlayerCollisionDetected bool
 	PlayerWelded            bool
 	StickyArray             []StickyInfo
+	AbsorbCount             int
 	BreaksInfo
 	World      *box2d.B2World
 	ResetWorld bool

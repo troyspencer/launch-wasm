@@ -11,9 +11,10 @@ func NewPlayer() *Player {
 				fillStyle:   "rgba(180, 180,180,1)",
 				strokeStyle: "rgba(180, 180,180,1)",
 			},
-			sticky: true,
-			bouncy: false,
-			breaks: false,
+			sticky:  true,
+			bouncy:  false,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
 }
