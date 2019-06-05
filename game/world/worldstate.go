@@ -89,6 +89,9 @@ func (worldState *WorldState) Clear() {
 	for body := worldState.World.GetBodyList(); body != nil; body = body.GetNext() {
 		worldState.World.DestroyBody(body)
 	}
+
+	// reset absorb count
+	worldState.AbsorbCount = 0
 }
 
 func (worldState WorldState) IsPlayerOutOfBounds() bool {
