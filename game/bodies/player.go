@@ -11,24 +11,10 @@ func NewPlayer() *Player {
 				fillStyle:   "rgba(180, 180,180,1)",
 				strokeStyle: "rgba(180, 180,180,1)",
 			},
-			sticky: true,
-			bouncy: false,
+			sticky:  true,
+			bouncy:  false,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
-}
-
-func (b *Player) FillStyle() string {
-	return b.fillStyle
-}
-
-func (b *Player) StrokeStyle() string {
-	return b.strokeStyle
-}
-
-func (b *Player) Sticky() bool {
-	return b.sticky
-}
-
-func (b *Player) Bouncy() bool {
-	return b.bouncy
 }

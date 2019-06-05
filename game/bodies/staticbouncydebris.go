@@ -11,24 +11,10 @@ func NewStaticBouncyDebris() *StaticBouncyDebris {
 				fillStyle:   "rgba(100,0,0,1)",
 				strokeStyle: "rgba(100,0,0,1)",
 			},
-			sticky: false,
-			bouncy: true,
+			sticky:  false,
+			bouncy:  true,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
-}
-
-func (b *StaticBouncyDebris) FillStyle() string {
-	return b.fillStyle
-}
-
-func (b *StaticBouncyDebris) StrokeStyle() string {
-	return b.strokeStyle
-}
-
-func (b *StaticBouncyDebris) Sticky() bool {
-	return b.sticky
-}
-
-func (b *StaticBouncyDebris) Bouncy() bool {
-	return b.bouncy
 }

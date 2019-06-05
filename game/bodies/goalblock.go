@@ -11,24 +11,10 @@ func NewGoalBlock() *GoalBlock {
 				fillStyle:   "rgba(0, 255,0,1)",
 				strokeStyle: "rgba(0, 255,0,1)",
 			},
-			sticky: true,
-			bouncy: false,
+			sticky:  true,
+			bouncy:  false,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
-}
-
-func (b *GoalBlock) FillStyle() string {
-	return b.fillStyle
-}
-
-func (b *GoalBlock) StrokeStyle() string {
-	return b.strokeStyle
-}
-
-func (b *GoalBlock) Sticky() bool {
-	return b.sticky
-}
-
-func (b *GoalBlock) Bouncy() bool {
-	return b.bouncy
 }

@@ -2,6 +2,8 @@ package world
 
 import (
 	"syscall/js"
+
+	"github.com/ByteArena/box2d"
 )
 
 func (worldState *WorldState) HandleEsc(this js.Value, args []js.Value) interface{} {
@@ -19,7 +21,7 @@ func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interf
 	}
 
 	// only allow launch if grounded aka welded to an object
-	if worldState.PlayerWelded {
+	if worldState.PlayerWelded || worldState.AbsorbCount > 0 {
 		mx := e.Get("clientX").Float() * worldState.WorldScale
 		my := e.Get("clientY").Float() * worldState.WorldScale
 		worldState.LaunchPlayer(mx, my)
@@ -36,17 +38,17 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
 
+	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
+
 	resizing := worldState.Resize()
 	if resizing {
 		worldState.Resizing = true
 		worldState.LastResize = now
 	}
 	if now-worldState.LastResize > 150 && worldState.Resizing {
-		worldState.Reset()
+		worldState.ResetWorld = true
 		worldState.Resizing = false
 	}
-
-	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
 	if worldState.IsPlayerOutOfBounds() {
 		worldState.ResetWorld = true
@@ -61,11 +63,33 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 
 	worldState.Context.Call("clearRect", 0, 0, worldState.Width*worldState.WorldScale, worldState.Height*worldState.WorldScale)
 
+	draw := []*box2d.B2Body{}
+	drawLast := []*box2d.B2Body{}
+
+	// draw absorbing things last, so they can be drawn in front of others
 	for curBody := worldState.World.GetBodyList(); curBody != nil; curBody = curBody.M_next {
-		// ignore player and goal block, as they are styled differently
-		worldState.Draw(curBody)
+		if absorber, ok := curBody.GetUserData().(Absorber); ok {
+			if absorber.Absorbs() {
+				drawLast = append(drawLast, curBody)
+			} else {
+				draw = append(draw, curBody)
+			}
+		}
 	}
+
+	for _, body := range draw {
+		worldState.Draw(body)
+	}
+
+	for _, body := range drawLast {
+		worldState.Draw(body)
+	}
+
 	renderFrame := js.FuncOf(worldState.RenderFrame)
 	js.Global().Call("requestAnimationFrame", renderFrame)
 	return nil
+}
+
+type Absorber interface {
+	Absorbs() bool
 }
