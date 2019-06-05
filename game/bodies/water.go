@@ -9,7 +9,7 @@ func NewWater() *Water {
 		Body: Body{
 			JSColors: JSColors{
 				fillStyle:   "rgba(0,0,180,0.5)",
-				strokeStyle: "rgba(0,0,50,0.5)",
+				strokeStyle: "rgba(0,0,180,0)",
 			},
 			sticky:  false,
 			bouncy:  false,
