@@ -11,9 +11,10 @@ func NewBreakableDebris() *BreakableDebris {
 				fillStyle:   "rgba(100,100,100,1)",
 				strokeStyle: "rgba(255,255,255,1)",
 			},
-			sticky: false,
-			bouncy: false,
-			breaks: true,
+			sticky:  false,
+			bouncy:  false,
+			breaks:  true,
+			absorbs: false,
 		},
 	}
 }

@@ -11,9 +11,10 @@ func NewStaticDebris() *StaticDebris {
 				fillStyle:   "rgba(50,50,50,1)",
 				strokeStyle: "rgba(50,50,50,1)",
 			},
-			sticky: false,
-			bouncy: false,
-			breaks: false,
+			sticky:  false,
+			bouncy:  false,
+			breaks:  false,
+			absorbs: false,
 		},
 	}
 }
