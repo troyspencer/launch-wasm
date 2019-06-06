@@ -49,9 +49,6 @@ module.exports = {
       }
     }),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./static/init_go.js') }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/manifest.json') }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/launch-144.png') }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/launch-192.png') })
+    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
   ]
 };
