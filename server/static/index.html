@@ -1,4 +1,5 @@
 <html>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<head>
 		<meta name="theme-color" content="black"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,15 +15,6 @@
 				WebAssembly + JavaScript is required for this game.
 			</body>
 		</noscript>
-		<script src="/wasm_exec.js"></script>
-		<script>
-			(async () => {
-				const go = new Go()
-				const fetchPromise = fetch('/main.wasm');
-				const { instance } = await WebAssembly.instantiateStreaming(fetchPromise, go.importObject);
-				go.run(instance)
-			})();
-		</script>
 		<script>
 			// Check that service workers are registered
 			if ('serviceWorker' in navigator) {
@@ -45,6 +37,8 @@ body,pre { margin:0;padding:0; }
 	</style>
 	</head>
 	<body>
-		<canvas id="mycanvas"></canvas>
+		<div id="app"></div>
+		<canvas id="mycanvas"></canvas>  
 	</body>
+</meta>
 </html>
