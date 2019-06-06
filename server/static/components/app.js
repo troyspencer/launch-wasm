@@ -18,7 +18,14 @@ export default class App extends React.Component {
       });
   }
 
+  handleClick = () => {
+    console.log("ClickedJS")
+    const event = new Event("increment", {"test": true})
+    
+    window.dispatchEvent(event)
+  }
+
   render() {
-    return this.state.isLoading ? <div>Loading</div> :  <div><button id="myButton">Click to say Hi in console!</button></div>
+    return this.state.isLoading ? <div>Loading</div> :  <div><button onClick={this.handleClick}>Click to say Hi in console!</button></div>
   }
 }

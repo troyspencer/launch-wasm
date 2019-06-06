@@ -48,7 +48,6 @@ module.exports = {
         removeRedundantAttributes: true
       }
     }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/init_go.js') }),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
   ]
 };
