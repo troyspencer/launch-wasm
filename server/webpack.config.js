@@ -1,14 +1,15 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   resolve: {
-    modules: ['static', 'node_modules']
+    modules: ['react', 'node_modules']
   },
   devtool: 'source-map',
   entry: {
     vendor: ['@babel/polyfill', 'react', 'react-dom'],
-    client:     './static/index.js',
+    client:     './react/index.js',
   },
   output: {
     path: __dirname + '/dist',
@@ -58,6 +59,9 @@ module.exports = {
         removeRedundantAttributes: true
       }
     }),
+    new CopyWebpackPlugin([
+      { from: 'static', to: 'static' }
+    ]),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
   ]
 };

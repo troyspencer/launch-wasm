@@ -4,9 +4,9 @@ runtime: go112
 handlers:
   # If the path is empty, show static index.html file
 - url: /
-  static_files: static/index.html
-  upload: static/index.html
+  static_files: dist/index.html
+  upload: dist/index.html
 
 - url: /.*
-  static_dir: static
+  static_dir: dist
 

@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fs := withIndices(gzipped.FileServer(http.Dir("static")))
+	fs := withIndices(gzipped.FileServer(http.Dir("dist")))
 
 	port := os.Getenv("PORT")
 	if port == "" {

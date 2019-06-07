@@ -6,8 +6,8 @@ services:
       - seccomp:unconfined
     volumes:
       - type: bind
-        source: ./server/static
-        target: /go/src/github.com/troyspencer/launch-wasm/server/static
+        source: ./server/dist
+        target: /go/src/github.com/troyspencer/launch-wasm/server/dist
     ports:
       - 8080:8080
 volumes:
