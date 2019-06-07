@@ -4,15 +4,15 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   resolve: {
-    modules: ['react', 'node_modules']
+    modules: ['node_modules']
   },
   devtool: 'source-map',
   entry: {
     vendor: ['@babel/polyfill', 'react', 'react-dom'],
-    client:     './react/index.js',
+    client:     './index.js',
   },
   output: {
-    path: __dirname + '/dist',
+    path: __dirname + '/../server/dist',
     filename: '[name].chunkhash.bundle.js',
     chunkFilename: '[name].chunkhash.bundle.js',
     publicPath: '/',
@@ -60,7 +60,7 @@ module.exports = {
       }
     }),
     new CopyWebpackPlugin([
-      { from: 'static', to: 'static' }
+      { from: 'static' }
     ]),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
   ]

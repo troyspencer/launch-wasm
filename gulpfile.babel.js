@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import workboxBuild from 'workbox-build';
 
 const buildWasm = (cb) => {
-  exec('rm -f server/static/main.wasm.gz && rm -f server/static/main.wasm && env GOOS=js GOARCH=wasm go build -o server/static/main.wasm game/main.go && gzip -k server/static/main.wasm', (err, stdout, stderr) => {
+  exec('rm -f react/static/main.wasm.gz && rm -f react/static/main.wasm && env GOOS=js GOARCH=wasm go build -o react/static/main.wasm game/main.go && gzip -k react/static/main.wasm', (err, stdout, stderr) => {
     if (stdout) {
       console.log(stdout)
     }
@@ -19,11 +19,11 @@ const buildWasm = (cb) => {
 const buildSW = () => {
   // This will return a Promise
   return workboxBuild.generateSW({
-    globDirectory: './server/static',
+    globDirectory: './react/static',
     globPatterns: [
       '**\/*.{html,js,json,}',
     ],
-    swDest: './server/static/sw.js',
+    swDest: './react/static/sw.js',
     // Define runtime caching rules.
     runtimeCaching: [{
       // Match any request ends with .png, .jpg, .jpeg or .svg.
