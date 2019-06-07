@@ -60,7 +60,7 @@ module.exports = {
       }
     }),
     new CopyWebpackPlugin([
-      { from: 'static' }
+      { from: 'static', to: 'static' }
     ]),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
   ]

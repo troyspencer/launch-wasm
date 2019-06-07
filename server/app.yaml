@@ -8,12 +8,12 @@ handlers:
   upload: dist/index.html
 
 - url: /static/main\.wasm
-  static_files: dist/main.wasm
-  upload: dist/main\.wasm
+  static_files: dist/static/main.wasm
+  upload: dist/static/main\.wasm
   mime_type: application/wasm
 
 - url: /static
-  static_dir: dist
+  static_dir: dist/static
 
 - url: /.*
   static_dir: dist
