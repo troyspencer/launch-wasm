@@ -10,6 +10,14 @@ var config = {
     modules: ['components', 'node_modules']
   },
   devtool: 'source-map',
+  stats: {
+    cached: false,
+    cachedAssets: false,
+    chunks: false,
+    chunkModules: false,
+    chunkOrigins: false,
+    modules: false
+  },
   entry: {
     vendor: ['@babel/polyfill', 'react', 'react-dom'],
     client:     './components/index.js',

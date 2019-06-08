@@ -9,7 +9,7 @@
 
         "build": "yarn build:game && yarn build:react",
         "build:game": "gulp buildWasm",
-        "build:react": "cd react && yarn build",
+        "build:react": "cd react && yarn && yarn build",
 
         "serve:build": "cd server && sh ./run.sh",
         "gae-serve:build": "dev_appserver.py server/app.yaml",

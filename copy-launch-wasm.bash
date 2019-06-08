@@ -1,0 +1,1 @@
+mv ./main ./react/static/main.wasm

@@ -1,23 +1,23 @@
 steps:
 
-- name: 'gcr.io/cloud-builders/go'
-  args: ['install', 'game']
-  env: ['PROJECT_ROOT=github.com/troyspencer/launch-wasm/game']
+- name: golang
+  id: 'buildGame'
+  env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
+  args: ['go', 'build', 'game/main.go']
 
-- name: 'gcr.io/cloud-builders/go'
-  args: ['build', 'game']
-  env: ['PROJECT_ROOT=github.com/troyspencer/launch-wasm/game']
+- name: 'ubuntu'
+  waitFor: ['buildGame']
+  id: 'copyGame'
+  args: ['bash', './copy-launch-wasm.bash']
 
 - name: 'gcr.io/cloud-builders/yarn'
-  args: ['install']
-
-- name: 'gcr.io/cloud-builders/yarn'
-  id: 'build'
-  args: ['run', 'build']
+  waitFor: ['copyGame']
+  id: 'buildApp'
+  args: ['build:react']
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  waitFor: ['build']
-  id: 'deploy'
+  waitFor: ['buildApp']
+  id: 'deployApp'
   entrypoint: 'bash'
   args: 
     - '-c'
@@ -28,4 +28,3 @@ steps:
       else 
         gcloud app deploy server/app.yaml --no-promote
       fi
-      echo "Pushed to test"
