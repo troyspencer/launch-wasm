@@ -1,0 +1,30 @@
+steps:
+
+- name: golang
+  id: 'buildGame'
+  env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
+  args: ['go', 'build', 'game/main.go']
+
+- name: 'ubuntu'
+  waitFor: ['buildGame']
+  id: 'copyGame'
+  args: ['bash', './copy-launch-wasm.bash']
+
+- name: 'gcr.io/cloud-builders/yarn'
+  waitFor: ['copyGame']
+  id: 'buildApp'
+  args: ['build:react']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  waitFor: ['buildApp']
+  id: 'deployApp'
+  entrypoint: 'bash'
+  args: 
+    - '-c'
+    - |
+      set -e
+      if [[ "$BRANCH_NAME" == "master" ]]; then 
+        gcloud app deploy server/app.yaml
+      else 
+        gcloud app deploy server/app.yaml --no-promote
+      fi
