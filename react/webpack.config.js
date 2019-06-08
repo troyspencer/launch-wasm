@@ -1,9 +1,11 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const {GenerateSW} = require('workbox-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin'); 
+const webpack = require('webpack'); // to access built-in plugins
 const path = require('path');
 
-module.exports = {
+var config = {
   resolve: {
     modules: ['components', 'node_modules']
   },
@@ -13,7 +15,7 @@ module.exports = {
     client:     './components/index.js',
   },
   output: {
-    path: __dirname + '/../server/dist',
+    path: __dirname + '/dist',
     filename: '[name].chunkhash.bundle.js',
     chunkFilename: '[name].chunkhash.bundle.js',
     publicPath: '/',
@@ -43,8 +45,17 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     disableHostCheck: true
-  },
-  plugins: [
+  }
+};
+
+module.exports = (env, argv) => {
+  if (argv.mode === 'production') {
+    config.output.path = __dirname + '/../server/dist'
+  }
+
+  config.plugins =  [
+    new webpack.ProgressPlugin(),
+    new CleanWebpackPlugin(),
     new CopyWebpackPlugin([
       { from: 'static', to: 'static'}
     ]),
@@ -65,4 +76,6 @@ module.exports = {
     }),
     new GenerateSW(),
   ]
-};
+
+  return config
+}
