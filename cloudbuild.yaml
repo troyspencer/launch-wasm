@@ -4,7 +4,7 @@ steps:
   args: 
     - '-c'
     - |
-      if [[ "$BRANCH_NAME" == "master"]]; then 
+      if [[ "$BRANCH_NAME" == "master"]] then 
         gcloud app deploy server/app.yaml
       else 
         gcloud app deploy server/app.yaml --no-promote
