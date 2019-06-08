@@ -1,8 +1,10 @@
 steps:
-- name: "gcr.io/cloud-builders/gcloud"
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
   args: 
-    - "app"
-    - "deploy"
-    - "server/app.yaml"
-    - [[ "$BRANCH_NAME" != "master"]] && "--no-promote"
+    - 'app'
+    - 'deploy'
+    - 'server/app.yaml'
+    - |
+      [[ "$BRANCH_NAME" != "master"]] && "--no-promote"
 timeout: "1600s"
