@@ -2,10 +2,12 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: 
+    - '-c'
     - 'app'
     - 'deploy'
     - 'server/app.yaml'
     - |
-      [[ "$BRANCH_NAME" != "master"]] && --no-promote
+      if [[ "$BRANCH_NAME" != "master"]]; then --no-promote
+      fi
       echo "Pushed to test"
 timeout: "1600s"
