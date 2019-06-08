@@ -1,7 +1,7 @@
 FROM launch-wasm-base
 
 WORKDIR /go/src/github.com/troyspencer/launch-wasm/server
-ADD server/serve.go .
+ADD serve.go .
 RUN go install -v .
 EXPOSE 8080
 CMD ["server"]

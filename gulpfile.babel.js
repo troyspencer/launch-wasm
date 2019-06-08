@@ -2,7 +2,7 @@ import gulp from 'gulp';
 import { exec } from 'child_process';
 
 const buildWasm = (cb) => {
-  exec('rm -f react/static/main.wasm.gz && rm -f react/static/main.wasm && env GOOS=js GOARCH=wasm go build -o react/static/main.wasm game/main.go && gzip -k react/static/main.wasm', (err, stdout, stderr) => {
+  exec('rm -f react/static/main.wasm.gz && rm -f react/static/main.wasm && cd game && env GOOS=js GOARCH=wasm go build -o ../react/static/main.wasm main.go && gzip -k ../react/static/main.wasm', (err, stdout, stderr) => {
     if (stdout) {
       console.log(stdout)
     }
