@@ -1,0 +1,42 @@
+<html>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<head>
+		  <meta name="theme-color" content="black"/>
+		  <meta name="viewport" content="width=device-width, initial-scale=1">
+		  <link rel="launch-144.png" sizes="144x144" href="/static/launch-144.png">
+		  <link rel="icon" sizes="192x192" href="/static/launch-192.png">
+		  <link rel="apple-touch-icon" href="/static/launch-192.png">
+		  <link rel='manifest' href='/static/manifest.json'>
+		  <title>Launch</title>
+		  <meta charset="utf-8">
+		  <meta name="Description" content="Launch is a relaxing physics-based game. You reach the goal, or float into the void trying.">
+		  <noscript>
+			<div style="background-color: #212121; color: rgb(180,180,180);">
+			  <h1>Launch</h1>
+			  WebAssembly + JavaScript is required for this game.
+			</div>
+		  </noscript>
+		  <script>
+				// Check that service workers are registered
+				if ('serviceWorker' in navigator) {
+				  // Use the window load event to keep the page load performant
+				  window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/sw.js');
+				  });
+				}
+			  </script>
+		  <style>
+		  body,pre { margin:0;padding:0; }
+			#app {
+				height:0px;
+				pointer-events:inherit;
+				overflow:visible;
+				background:none !important;
+			}
+		  </style>
+		</head>
+		<body > 
+		  <div id="app"></div>
+		</body>
+	  </meta>
+</html>

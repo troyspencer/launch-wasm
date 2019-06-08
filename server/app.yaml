@@ -4,9 +4,17 @@ runtime: go112
 handlers:
   # If the path is empty, show static index.html file
 - url: /
-  static_files: static/index.html
-  upload: static/index.html
+  static_files: dist/index.html
+  upload: dist/index.html
+
+- url: /static/main\.wasm
+  static_files: dist/static/main.wasm
+  upload: dist/static/main\.wasm
+  mime_type: application/wasm
+
+- url: /static
+  static_dir: dist/static
 
 - url: /.*
-  static_dir: static
+  static_dir: dist
 

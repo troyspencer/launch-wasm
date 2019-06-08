@@ -6,6 +6,7 @@
         "serve": "sh ./run.sh",
         "watch": "gulp watch",
         "build": "gulp buildWasm",
+        "build-prod-sw": "gulp buildProdSW",
         "dev": "dev_appserver.py server/app.yaml",
         "deploy": "gcloud app deploy --project=keen-ascent-205301 server/app.yaml",
         "deploy-test": "gcloud app deploy --project=keen-ascent-205301 --no-promote server/app.yaml --verbosity=debug",

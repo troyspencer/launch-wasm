@@ -26,6 +26,7 @@ func main() {
 
 	worldState.Doc.Call("addEventListener", "keyup", keyUpEvt)
 	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvt)
+	js.Global().Call("addEventListener", "increment", js.FuncOf(worldState.HandleButton))
 
 	done := make(chan struct{}, 0)
 	// Start running

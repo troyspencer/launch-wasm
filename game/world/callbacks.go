@@ -1,6 +1,7 @@
 package world
 
 import (
+	"log"
 	"syscall/js"
 
 	"github.com/ByteArena/box2d"
@@ -87,6 +88,12 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 
 	renderFrame := js.FuncOf(worldState.RenderFrame)
 	js.Global().Call("requestAnimationFrame", renderFrame)
+	return nil
+}
+
+func (worldState *WorldState) HandleButton(this js.Value, args []js.Value) interface{} {
+	worldState.Clicks++
+	log.Println(worldState.Clicks)
 	return nil
 }
 
