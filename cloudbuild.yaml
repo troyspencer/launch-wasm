@@ -3,12 +3,11 @@ steps:
   entrypoint: 'bash'
   args: 
     - '-c'
-    - 'gcloud'
-    - 'app'
-    - 'deploy'
-    - 'server/app.yaml'
     - |
-      if [[ "$BRANCH_NAME" != "master"]]; then --no-promote
+      if [[ "$BRANCH_NAME" == "master"]]; then 
+        gcloud app deploy server/app.yaml
+      else 
+        gcloud app deploy server/app.yaml --no-promote
       fi
       echo "Pushed to test"
 timeout: "1600s"
