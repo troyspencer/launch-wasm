@@ -1,15 +1,16 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const {GenerateSW} = require('workbox-webpack-plugin');
+const path = require('path');
 
 module.exports = {
   resolve: {
-    modules: ['node_modules']
+    modules: ['components', 'node_modules']
   },
   devtool: 'source-map',
   entry: {
     vendor: ['@babel/polyfill', 'react', 'react-dom'],
-    client:     './index.js',
+    client:     './components/index.js',
   },
   output: {
     path: __dirname + '/../server/dist',
@@ -44,10 +45,13 @@ module.exports = {
     disableHostCheck: true
   },
   plugins: [
+    new CopyWebpackPlugin([
+      { from: 'static', to: 'static'}
+    ]),
     new HtmlWebpackPlugin({
-      title: 'GoWasm!',
-      template: './static/index.html',
-      filename: './index.html',
+      title: 'Launch',
+      template: path.join(__dirname, 'index.html'),
+      filename: 'index.html',
       inject: true,
       minify: {
         collapseWhitespace: true,
@@ -59,9 +63,6 @@ module.exports = {
         removeRedundantAttributes: true
       }
     }),
-    new CopyWebpackPlugin([
-      { from: 'static', to: 'static' }
-    ]),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./static/wasm_exec.js') })
+    new GenerateSW(),
   ]
 };
