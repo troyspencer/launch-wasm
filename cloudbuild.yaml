@@ -1,12 +1,12 @@
 steps:
 
 - name: 'gcr.io/cloud-builders/go'
-  args: ['install', '.']
-  env: ['PROJECT_ROOT=game']
+  args: ['install', 'github.com/troyspencer/launch-wasm/game']
+  env: ['PROJECT_ROOT=github.com/troyspencer/launch-wasm/game']
 
 - name: 'gcr.io/cloud-builders/go'
-  args: ['build', 'game']
-  env: ['PROJECT_ROOT=game']
+  args: ['build', 'github.com/troyspencer/launch-wasm/game']
+  env: ['PROJECT_ROOT=github.com/troyspencer/launch-wasm/game']
 
 - name: 'gcr.io/cloud-builders/yarn'
   args: ['install']
