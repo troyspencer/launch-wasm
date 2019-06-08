@@ -1,6 +1,5 @@
 import gulp from 'gulp';
 import { exec } from 'child_process';
-import workboxBuild from 'workbox-build';
 
 const buildWasm = (cb) => {
   exec('rm -f react/static/main.wasm.gz && rm -f react/static/main.wasm && env GOOS=js GOARCH=wasm go build -o react/static/main.wasm game/main.go && gzip -k react/static/main.wasm', (err, stdout, stderr) => {
@@ -11,98 +10,7 @@ const buildWasm = (cb) => {
       console.log(stderr);
     }
     cb(err)
-    buildSW()
   })
-}
-
-// NOTE: This should be run *AFTER* all your assets are built
-const buildSW = () => {
-  // This will return a Promise
-  return workboxBuild.generateSW({
-    globDirectory: './react/static',
-    globPatterns: [
-      '**\/*.{html,js,json,}',
-    ],
-    swDest: './react/sw.js',
-    // Define runtime caching rules.
-    runtimeCaching: [{
-      // Match any request ends with .png, .jpg, .jpeg or .svg.
-      urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
-
-      // Apply a cache-first strategy.
-      handler: 'StaleWhileRevalidate',
-
-      options: {
-        // Use a custom cache name.
-        cacheName: 'images',
-
-        // Only cache 10 images.
-        expiration: {
-          maxEntries: 10,
-        },
-      },
-    },{
-      // Match any request ends with .png, .jpg, .jpeg or .svg.
-      urlPattern: /\.(?:wasm)$/,
-
-      // Apply a cache-first strategy.
-      handler: 'StaleWhileRevalidate',
-
-      options: {
-        // Use a custom cache name.
-        cacheName: 'refresh',
-
-        expiration: {
-          maxEntries: 10,
-        },
-      },
-    }],
-  });
-}
-
-// NOTE: This should be run *AFTER* all your assets are built
-const buildProdSW = () => {
-  // This will return a Promise
-  return workboxBuild.generateSW({
-    globDirectory: './server/dist',
-    globPatterns: [
-      '**\/*.{html,js,json,}',
-    ],
-    swDest: './server/dist/sw.js',
-    // Define runtime caching rules.
-    runtimeCaching: [{
-      // Match any request ends with .png, .jpg, .jpeg or .svg.
-      urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
-
-      // Apply a cache-first strategy.
-      handler: 'StaleWhileRevalidate',
-
-      options: {
-        // Use a custom cache name.
-        cacheName: 'images',
-
-        // Only cache 10 images.
-        expiration: {
-          maxEntries: 10,
-        },
-      },
-    },{
-      // Match any request ends with .png, .jpg, .jpeg or .svg.
-      urlPattern: /\.(?:wasm)$/,
-
-      // Apply a cache-first strategy.
-      handler: 'StaleWhileRevalidate',
-
-      options: {
-        // Use a custom cache name.
-        cacheName: 'refresh',
-
-        expiration: {
-          maxEntries: 10,
-        },
-      },
-    }],
-  });
 }
 
 const watch = () => {
@@ -116,8 +24,6 @@ const defaultTasks = gulp.series(watch)
 
 export {
   buildWasm,
-  buildSW,
-  buildProdSW,
   watch
 }
 
