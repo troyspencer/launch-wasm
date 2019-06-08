@@ -6,5 +6,6 @@ steps:
     - 'deploy'
     - 'server/app.yaml'
     - |
-      [[ "$BRANCH_NAME" != "master"]] && "--no-promote"
+      [[ "$BRANCH_NAME" != "master"]] && --no-promote
+      echo "Pushed to test"
 timeout: "1600s"
