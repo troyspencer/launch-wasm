@@ -1,13 +1,22 @@
 steps:
+- name: 'gcr.io/cloud-builders/npm'
+  args: ['install']
+
+- name: 'gcr.io/cloud-builders/npm'
+  id: 'build'
+  args: ['run', 'build']
+
 - name: 'gcr.io/cloud-builders/gcloud'
+  waitFor: ['build']
+  id: 'deploy'
   entrypoint: 'bash'
   args: 
     - '-c'
     - |
+      set -e
       if [[ "$BRANCH_NAME" == "master" ]]; then 
         gcloud app deploy server/app.yaml
       else 
         gcloud app deploy server/app.yaml --no-promote
       fi
       echo "Pushed to test"
-timeout: "1600s"
