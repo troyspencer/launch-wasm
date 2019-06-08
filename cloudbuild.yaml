@@ -3,6 +3,7 @@ steps:
   entrypoint: 'bash'
   args: 
     - '-c'
+    - 'gcloud'
     - 'app'
     - 'deploy'
     - 'server/app.yaml'
