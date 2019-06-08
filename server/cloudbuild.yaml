@@ -1,0 +1,7 @@
+steps:
+- name: "gcr.io/cloud-builders/gcloud"
+  args: 
+    - "app"
+    - "deploy"
+    - [[ "$BRANCH_NAME" != "master"]] && "--no-promote"
+timeout: "1600s"
