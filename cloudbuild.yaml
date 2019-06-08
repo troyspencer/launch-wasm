@@ -1,8 +1,17 @@
 steps:
-- name: 'gcr.io/cloud-builders/npm'
+
+- name: 'gcr.io/cloud-builders/go'
+  args: ['install', '.']
+  env: ['PROJECT_ROOT=game']
+
+- name: 'gcr.io/cloud-builders/go'
+  args: ['build', 'game']
+  env: ['PROJECT_ROOT=game']
+
+- name: 'gcr.io/cloud-builders/yarn'
   args: ['install']
 
-- name: 'gcr.io/cloud-builders/npm'
+- name: 'gcr.io/cloud-builders/yarn'
   id: 'build'
   args: ['run', 'build']
 
