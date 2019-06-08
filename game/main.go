@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 	"syscall/js"
 	"time"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	log.Println("test")
 	// seed the random generator
 	rand.Seed(time.Now().UnixNano())
 

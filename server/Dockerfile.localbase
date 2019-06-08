@@ -1,5 +1,5 @@
 FROM golang:stretch
 
 WORKDIR /go/src/github.com/troyspencer/launch-wasm/server
-ADD server/serve.go .
+ADD serve.go .
 RUN go get ./...

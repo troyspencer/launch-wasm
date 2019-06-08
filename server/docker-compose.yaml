@@ -6,7 +6,7 @@ services:
       - seccomp:unconfined
     volumes:
       - type: bind
-        source: ./server/dist
+        source: ./dist
         target: /go/src/github.com/troyspencer/launch-wasm/server/dist
     ports:
       - 8080:8080
