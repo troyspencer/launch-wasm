@@ -3,8 +3,9 @@ import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
 import Game from './game'
 import SidebarContent from "./sidebarContent";
+import Stats from "./stats";
 
-export default class SettingsSidebar extends React.Component {
+export default class Overlay extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -29,7 +30,7 @@ export default class SettingsSidebar extends React.Component {
     this.onShowStatsChange(show)
   }
 
-  onShowStatsChange = (showStats) => {
+  onShowStatsChange(showStats) {
     this.setState({showStats: showStats})
   }
 
@@ -42,8 +43,9 @@ export default class SettingsSidebar extends React.Component {
         onSetOpen={this.onSetSidebarOpen}
         styles={{ sidebar: { background: "#464646", color: "grey"} }}
       >
-        <Game showStats={this.state.showStats} />
+        <Game />
         <SettingsButton onClick={this.handleSidebarChange} />
+        <Stats showStats={this.state.showStats} />
       </Sidebar>
     );
   }

@@ -7,6 +7,7 @@ export default class Launches extends React.Component {
         this.state = {
             launches: 0,
         }
+        this.handleLaunchUpdate = this.handleLaunchUpdate.bind(this)
     }
 
     componentDidMount() {
@@ -21,8 +22,12 @@ export default class Launches extends React.Component {
     }
 
     handleLaunchUpdate = (event) => {
+        this.onLaunchUpdate(event.launches)
+    }
+
+    onLaunchUpdate(launches) {
         this.setState({
-            launches: event.launches,
+            launches: launches,
         })
     }
 
