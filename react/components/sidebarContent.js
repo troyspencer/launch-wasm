@@ -12,9 +12,6 @@ const styles = {
 export default class SidebarContent extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      showStats: false,
-    };
     this.handleStatsChange = this.handleStatsChange.bind(this);
     this.onShowStatsChange = this.onShowStatsChange.bind(this);
   }
@@ -31,7 +28,7 @@ export default class SidebarContent extends React.Component {
     return (
       <FlexView column marginTop="10" vAlignContent='center'>
         <Header style={styles.header} textAlign="center" content="Settings" />
-        <StatsToggle showStats={this.state.showStats} onShowStatsChange={this.handleStatsChange} />
+        <StatsToggle showStats={this.props.showStats} onShowStatsChange={this.handleStatsChange} />
       </FlexView>
     )
   }
