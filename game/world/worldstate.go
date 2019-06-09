@@ -29,7 +29,7 @@ type WorldSettings struct {
 type WorldState struct {
 	*WorldSettings
 	*JSObjects
-	Clicks int
+	Launches                int
 	Player                  *box2d.B2Body
 	WeldedDebris            *box2d.B2Body
 	GoalBlock               *box2d.B2Body
@@ -93,7 +93,7 @@ func (worldState *WorldState) Clear() {
 
 	// reset absorb count
 	worldState.AbsorbCount = 0
-	worldState.Clicks = 0
+	worldState.SetLaunches(0)
 }
 
 func (worldState WorldState) IsPlayerOutOfBounds() bool {
@@ -136,3 +136,7 @@ func (worldState WorldState) GetSmallestDimension() float64 {
 	return worldState.Width
 }
 
+func (worldState *WorldState) SetLaunches(launches int) {
+	worldState.Launches = launches
+	worldState.TriggerUpdateLaunches()
+}

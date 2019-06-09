@@ -1,37 +1,49 @@
 import React from "react";
 import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
+import Game from './game'
+import StatsToggle from "./statsToggle";
 
 export default class SettingsSidebar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      sidebarOpen: false
+      sidebarOpen: false,
+      showStats: false,
     };
+    this.handleSidebarChange = this.handleSidebarChange.bind(this);
     this.onSetSidebarOpen = this.onSetSidebarOpen.bind(this);
+    this.handleStatsChange = this.handleStatsChange.bind(this);
+    this.onShowStatsChange = this.onShowStatsChange.bind(this);
+  }
+
+  handleSidebarChange() {
+    this.onSetSidebarOpen(!this.state.sidebarOpen);
   }
 
   onSetSidebarOpen(open) {
     this.setState({ sidebarOpen: open });
   }
 
-  onClickSettings = () => {
-    console.log("ClickedJS")
-    const event = new Event("increment", {"test": true})
-    window.dispatchEvent(event)
-    this.onSetSidebarOpen(true)
-}
+  handleStatsChange(show) {
+    this.onShowStatsChange(show)
+  }
+
+  onShowStatsChange = (showStats) => {
+    this.setState({showStats: showStats})
+  }
 
   render() {
+    const sidebarContent = <StatsToggle onShowStatsChange={this.handleStatsChange} />
     return (
       <Sidebar
-        sidebar={<b>Sidebar content</b>}
+        sidebar={sidebarContent}
         open={this.state.sidebarOpen}
         onSetOpen={this.onSetSidebarOpen}
-        styles={{ sidebar: { background: "white" } }}
+        styles={{ sidebar: { background: "#464646", color: "grey" } }}
       >
-        {this.props.children}
-        <SettingsButton onClick={this.onClickSettings} />
+        <Game showStats={this.state.showStats} />
+        <SettingsButton onClick={this.handleSidebarChange} />
       </Sidebar>
     );
   }
