@@ -1,5 +1,4 @@
 import React from 'react'
-import { Label } from 'semantic-ui-react'
 
 export default class Launches extends React.Component {
     constructor(props) {
@@ -33,9 +32,9 @@ export default class Launches extends React.Component {
 
     render(){
         return (
-            <Label color="grey">
+            <div color="grey">
                 {this.state.launches}
-            </Label>
+            </div>
         )
     }
     

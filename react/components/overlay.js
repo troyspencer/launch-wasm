@@ -3,7 +3,6 @@ import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
 import Game from './game'
 import SidebarContent from "./sidebarContent";
-import Stats from "./stats";
 
 export default class Overlay extends React.Component {
   constructor(props) {
@@ -13,16 +12,16 @@ export default class Overlay extends React.Component {
       showStats: false,
     };
     this.handleSidebarChange = this.handleSidebarChange.bind(this);
-    this.onSetSidebarOpen = this.onSetSidebarOpen.bind(this);
+    this.onSidebarChange = this.onSidebarChange.bind(this);
     this.handleStatsChange = this.handleStatsChange.bind(this);
     this.onShowStatsChange = this.onShowStatsChange.bind(this);
   }
 
   handleSidebarChange() {
-    this.onSetSidebarOpen(!this.state.sidebarOpen);
+    this.onSidebarChange(!this.state.sidebarOpen);
   }
 
-  onSetSidebarOpen(open) {
+  onSidebarChange(open) {
     this.setState({ sidebarOpen: open });
   }
 
@@ -40,12 +39,11 @@ export default class Overlay extends React.Component {
       <Sidebar
         sidebar={<SidebarContent showStats={this.state.showStats} onShowStatsChange={this.handleStatsChange} />}
         open={this.state.sidebarOpen}
-        onSetOpen={this.onSetSidebarOpen}
+        onSetOpen={this.onSidebarChange}
         styles={{ sidebar: { background: "#464646", color: "grey"} }}
       >
         <Game />
         <SettingsButton onClick={this.handleSidebarChange} />
-        <Stats showStats={this.state.showStats} />
       </Sidebar>
     );
   }

@@ -1,5 +1,4 @@
 import React from 'react'
-import { Segment } from 'semantic-ui-react'
 import Launches from './launches'
 
 export default class Stats extends React.Component {
@@ -8,9 +7,9 @@ export default class Stats extends React.Component {
     }
     render(){
         return (
-            <Segment hidden={!this.props.showStats} floated="right" vertical={true}>
+            <div hidden={!this.props.showStats}>
                 <Launches />
-            </Segment>
+            </div>
         )
     }
     

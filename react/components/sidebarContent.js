@@ -1,11 +1,13 @@
 import React from "react";
 import StatsToggle from "./statsToggle";
-import FlexView from "react-flexview/lib";
-import { Header } from "semantic-ui-react";
+import Stats from "./stats";
+import FlexView from "react-flexview";
 
 const styles = {
   header: {
     color: "grey",
+    fontSize: "1.5em",
+    textAlign: "center",
   }
 }
 
@@ -27,8 +29,11 @@ export default class SidebarContent extends React.Component {
   render() {
     return (
       <FlexView column marginTop="10" vAlignContent='center'>
-        <Header style={styles.header} textAlign="center" content="Settings" />
+        <div style={styles.header} >
+          Settings 
+        </div> 
         <StatsToggle showStats={this.props.showStats} onShowStatsChange={this.handleStatsChange} />
+        <Stats showStats={this.props.showStats} />
       </FlexView>
     )
   }

@@ -1,5 +1,6 @@
 import React from 'react'
-import LoaderCentered from './loader';
+import { Spin } from 'antd';
+import FlexView from 'react-flexview';
 
 const styles = {
   mycanvas: {
@@ -14,6 +15,7 @@ const styles = {
     left:0
   }
 }
+
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -38,11 +40,16 @@ export default class Game extends React.Component {
   }
 
   render() {
-      return (
-        <div>
-          <canvas style={styles.mycanvas} id="mycanvas" />
-          <LoaderCentered isLoading={this.state.isLoading} />
-        </div>
-      );
+    return (
+      <div>
+        <canvas style={styles.mycanvas} id="mycanvas" />
+        <FlexView column vAlignContent='center' hAlignContent='center' hidden={!this.state.isLoading}>
+          <FlexView vAlignContent='center' hAlignContent='center'>
+            <Spin tip="Loading..." />
+          </FlexView>
+        </FlexView>
+        
+      </div>
+    );
   }
 }
