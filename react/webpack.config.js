@@ -39,7 +39,26 @@ var config = {
       },
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          'style-loader', 
+          'css-loader'
+        ],
+      },
+      {
+        test: /\.less$/i,
+        use: [
+          {
+            loader: 'less-loader', // compiles Less to CSS
+            options: {
+              modifyVars: {
+                'primary-color': 'red',
+                'link-color': '#1DA57A',
+                'border-radius-base': '2px',
+             },
+             javascriptEnabled: true,
+           },
+          }
+        ],
       },
       {
         test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/,

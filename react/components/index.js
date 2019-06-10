@@ -1,7 +1,9 @@
 import React from 'react'
 import ReactDom from 'react-dom'
 import App from './app'
-import 'semantic-ui-css/semantic.min.css'
+import "bootstrap/dist/css/bootstrap.min.css";
+import "shards-ui/dist/css/shards.min.css"
+import 'antd/dist/antd.css';
 
 ReactDom.render(
   <App />,

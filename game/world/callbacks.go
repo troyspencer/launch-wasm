@@ -1,7 +1,6 @@
 package world
 
 import (
-	"log"
 	"syscall/js"
 
 	"github.com/ByteArena/box2d"
@@ -38,6 +37,8 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 	now := args[0].Float()
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
+	//worldState.Doc.Call("getElementById", "launches").Set("content", fmt.Sprintf("Launches: %d", worldState.Launches))
+	//log.Println(worldState.Doc.Call("getElementById", "launches"))
 
 	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
@@ -92,8 +93,7 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 }
 
 func (worldState *WorldState) HandleButton(this js.Value, args []js.Value) interface{} {
-	worldState.Clicks++
-	log.Println(worldState.Clicks)
+	worldState.Launches++
 	return nil
 }
 

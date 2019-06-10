@@ -12,6 +12,8 @@ type Breaker interface {
 }
 
 func (worldState *WorldState) LaunchPlayer(mx float64, my float64) {
+	worldState.SetLaunches(worldState.Launches+1)
+
 	movementDx := mx - worldState.Player.GetPosition().X
 	movementDy := my - worldState.Player.GetPosition().Y
 
