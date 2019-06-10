@@ -50,9 +50,30 @@ export default class Timer extends React.Component {
         })
     }
 
+    generateElapsedTime(now, start) {
+        const cleanSeconds = Math.round((now - start)/1000)
+        
+        var hours   = Math.floor(cleanSeconds / 3600);
+        var minutes = Math.floor((cleanSeconds - (hours * 3600)) / 60);
+        var seconds = cleanSeconds - (hours * 3600) - (minutes * 60);
+    
+        if (minutes == 0) {
+            return seconds
+        }
+        if (seconds < 10) {seconds = "0"+seconds;}
+
+        if (hours == 0) {
+            return minutes+':'+seconds
+        }
+        if (minutes < 10) {minutes = "0"+minutes;}
+
+        if (hours < 10) {hours = "0"+hours;}
+        return hours+':'+minutes+':'+seconds;
+    }
+
     render(){
         return (
-            <Badge style={styles.button} count={parseFloat(Math.round((this.state.now - this.state.startTime)/100)/10).toFixed(1)}>
+            <Badge style={styles.button} count={this.generateElapsedTime(this.state.now, this.state.startTime)}>
                 <Tooltip placement="right" title="Elapsed Time">
                     <Button style={styles.button} icon="clock-circle" />
                 </Tooltip>
