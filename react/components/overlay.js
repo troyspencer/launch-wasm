@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
+import Stats from "./stats";
 import Game from './game'
 import SidebarContent from "./sidebarContent";
 
@@ -44,6 +45,7 @@ export default class Overlay extends React.Component {
       >
         <Game />
         <SettingsButton onClick={this.handleSidebarChange} />
+        <Stats showStats={this.state.showStats} />
       </Sidebar>
     );
   }

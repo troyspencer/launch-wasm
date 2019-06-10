@@ -1,6 +1,5 @@
 import React from "react";
 import StatsToggle from "./statsToggle";
-import Stats from "./stats";
 import FlexView from "react-flexview";
 
 const styles = {
@@ -33,7 +32,6 @@ export default class SidebarContent extends React.Component {
           Settings 
         </div> 
         <StatsToggle showStats={this.props.showStats} onShowStatsChange={this.handleStatsChange} />
-        <Stats showStats={this.props.showStats} />
       </FlexView>
     )
   }

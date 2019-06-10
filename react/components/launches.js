@@ -1,4 +1,6 @@
 import React from 'react'
+import {Button, Tooltip, Icon} from 'antd'
+import FlexView from 'react-flexview'
 
 export default class Launches extends React.Component {
     constructor(props) {
@@ -32,11 +34,18 @@ export default class Launches extends React.Component {
 
     render(){
         return (
-            <div color="grey">
-                {this.state.launches}
-            </div>
+            <Tooltip placement="right" title="Launches">
+                <Button.Group>
+                    <FlexView hAlignContent='center'>
+                        <Button icon="rise" />
+                        <Button>
+                            {this.state.launches}
+                        </Button>
+                    </FlexView>
+                </Button.Group>
+                
+            </Tooltip>
         )
     }
-    
 }
 
