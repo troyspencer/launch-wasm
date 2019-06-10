@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import {Button, Tooltip, Badge} from 'antd'
 
 
@@ -9,44 +9,21 @@ const styles = {
     }
 }
 
-export default class Launches extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            launches: 0,
-        }
-        this.handleLaunchUpdate = this.handleLaunchUpdate.bind(this)
-    }
-
-    componentDidMount() {
-        // When the component is mounted, add your DOM listener to the "nv" elem.
-        // (The "nv" elem is assigned in the render function.)
-        window.document.addEventListener("updateLaunches", this.handleLaunchUpdate);
-      }
+export default function Launches() {
+    const [launchCount,setLaunchCount] = useState(0)
     
-    componentWillUnmount() {
-        // Make sure to remove the DOM listener when the component is unmounted.
-        window.document.removeEventListener("updateLaunches", this.handleLaunchUpdate);
-    }
+    useEffect(() => {
+        window.document.addEventListener("updateLaunches", (e) => setLaunchCount(e.launches));
+        return () => {
+            window.document.removeEventListener("updateLaunches", (e) => setLaunchCount(e.launches));
+        } 
+    },[])
 
-    handleLaunchUpdate = (event) => {
-        this.onLaunchUpdate(event.launches)
-    }
-
-    onLaunchUpdate(launches) {
-        this.setState({
-            launches: launches,
-        })
-    }
-
-    render(){
-        return (
-            <Badge style={styles.button} count={this.state.launches}>
-                <Tooltip placement="right" title="Launches">
-                    <Button style={styles.button} icon="rise" />
-                </Tooltip>
-            </Badge>
-        )
-    }
-}
-
+    return (
+        <Badge style={styles.button} count={launchCount}>
+            <Tooltip placement="right" title="Launches">
+                <Button style={styles.button} icon="rise" />
+            </Tooltip>
+        </Badge>
+    )
+}   
