@@ -1,6 +1,13 @@
 import React from 'react'
-import {Button, Tooltip} from 'antd'
-import FlexView from 'react-flexview'
+import {Button, Tooltip, Badge} from 'antd'
+
+
+const styles = {
+    button: {
+        marginTop: '15px',
+        marginLeft: '10px'
+    }
+}
 
 export default class Launches extends React.Component {
     constructor(props) {
@@ -34,17 +41,11 @@ export default class Launches extends React.Component {
 
     render(){
         return (
-            <Tooltip placement="right" title="Launches">
-                <Button.Group>
-                    <FlexView hAlignContent='center'>
-                        <Button icon="rise" />
-                        <Button>
-                            {this.state.launches}
-                        </Button>
-                    </FlexView>
-                </Button.Group>
-                
-            </Tooltip>
+            <Badge style={styles.button} count={this.state.launches}>
+                <Tooltip placement="right" title="Launches">
+                    <Button style={styles.button} icon="rise" />
+                </Tooltip>
+            </Badge>
         )
     }
 }
