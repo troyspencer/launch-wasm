@@ -1,5 +1,7 @@
 import React from 'react'
 import Launches from './launches'
+import Timer from './timer'
+import FlexView from 'react-flexview';
 
 export default class Stats extends React.Component {
     constructor(props) {
@@ -8,7 +10,10 @@ export default class Stats extends React.Component {
     render(){
         return (
             <div hidden={!this.props.showStats}>
-                <Launches />
+                <FlexView column hAlignContent='left'>
+                    <Launches />
+                    <Timer />
+                </FlexView>
             </div>
         )
     }

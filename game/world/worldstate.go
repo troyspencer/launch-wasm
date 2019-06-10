@@ -94,6 +94,7 @@ func (worldState *WorldState) Clear() {
 	// reset absorb count
 	worldState.AbsorbCount = 0
 	worldState.SetLaunches(0)
+	worldState.TriggerResetTimer()
 }
 
 func (worldState WorldState) IsPlayerOutOfBounds() bool {

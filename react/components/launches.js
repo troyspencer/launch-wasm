@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Tooltip, Icon} from 'antd'
+import {Button, Tooltip} from 'antd'
 import FlexView from 'react-flexview'
 
 export default class Launches extends React.Component {
