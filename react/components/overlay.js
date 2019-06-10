@@ -4,13 +4,14 @@ import SettingsButton from "./settingsButton"
 import Stats from "./stats";
 import Game from './game'
 import SidebarContent from "./sidebarContent";
+import FlexView from 'react-flexview';
 
 export default class Overlay extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       sidebarOpen: false,
-      showStats: false,
+      showStats: true,
     };
     this.handleSidebarChange = this.handleSidebarChange.bind(this);
     this.onSidebarChange = this.onSidebarChange.bind(this);
@@ -39,13 +40,17 @@ export default class Overlay extends React.Component {
     return (
       <Sidebar
         sidebar={<SidebarContent showStats={this.state.showStats} onShowStatsChange={this.handleStatsChange} />}
+        docked={this.state.sidebarOpen}
         open={this.state.sidebarOpen}
         onSetOpen={this.onSidebarChange}
         styles={{ sidebar: { background: "#464646", color: "grey"} }}
       >
         <Game />
-        <SettingsButton onClick={this.handleSidebarChange} />
-        <Stats showStats={this.state.showStats} />
+        <FlexView vAlignContent='top'>
+          <SettingsButton onClick={this.handleSidebarChange} />
+          <Stats showStats={this.state.showStats} />
+        </FlexView>
+        
       </Sidebar>
     );
   }

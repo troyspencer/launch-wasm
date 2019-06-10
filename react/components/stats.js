@@ -10,7 +10,7 @@ export default class Stats extends React.Component {
     render(){
         return (
             <div hidden={!this.props.showStats}>
-                <FlexView column hAlignContent='left'>
+                <FlexView vAlignContent='top'>
                     <Launches />
                     <Timer />
                 </FlexView>
