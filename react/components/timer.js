@@ -52,7 +52,7 @@ export default function Timer() {
 
     useEffect(() => {
         setElapsedTime(generateElapsedTime())
-    },[now, startTime])
+    },[now])
 
     useEffect(() => {
         window.document.addEventListener("resetTimer", handleResetTimer);
