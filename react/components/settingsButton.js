@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Tooltip} from 'antd'
+import {Button} from 'antd'
 
 const styles = {
     button: {
@@ -10,17 +10,8 @@ const styles = {
     }
 }
 
-export default class SettingsButton extends React.Component {
-    constructor(props) {
-        super(props)
-    }
-    render(){
-        return (
-            <Button style={styles.button} size="large" type="default" shape="circle" icon="setting" onClick={this.props.onClick}/>
-        )
-    }
-    
+export default function SettingsButton(props) {
+    return (
+        <Button style={styles.button} size="large" type="default" shape="circle" icon="setting" onClick={props.onClick}/>
+    )
 }
-
-
-
