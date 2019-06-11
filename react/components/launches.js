@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {Button, Tooltip, Badge} from 'antd'
 
-
 const styles = {
     button: {
         marginTop: '15px',
