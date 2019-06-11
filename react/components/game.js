@@ -1,6 +1,4 @@
-import React, {useState, useEffect} from 'react'
-import { Spin } from 'antd';
-import FlexView from 'react-flexview';
+import React, {useEffect} from 'react'
 
 const styles = {
   mycanvas: {
@@ -16,26 +14,17 @@ const styles = {
   }
 }
 
-export default function Game() {
-  const [loading,setLoading] = useState(true)
+export default function Game(props) {
   useEffect(() => {
     const go = new Go()
     const fetchPromise = fetch('/static/main.wasm');
     WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
-      setLoading(false)
+      props.onLoadingChange(false)
       go.run(result.instance)
     });
   }, [])
 
   return (
-    <div>
-      <canvas style={styles.mycanvas} id="mycanvas" />
-      <FlexView column vAlignContent='center' hAlignContent='center' hidden={!loading}>
-        <FlexView vAlignContent='center' hAlignContent='center'>
-          <Spin tip="Loading..." />
-        </FlexView>
-      </FlexView>
-      
-    </div>
+    <canvas style={styles.mycanvas} id="mycanvas" />
   );
 }
