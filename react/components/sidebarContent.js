@@ -10,29 +10,13 @@ const styles = {
   }
 }
 
-export default class SidebarContent extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleStatsChange = this.handleStatsChange.bind(this);
-    this.onShowStatsChange = this.onShowStatsChange.bind(this);
-  }
-
-  handleStatsChange(show) {
-    this.onShowStatsChange(show)
-  }
-
-  onShowStatsChange = (showStats) => {
-    this.props.onShowStatsChange(showStats)
-  }
-
-  render() {
+export default function SidebarContent(props) {
     return (
       <FlexView column marginTop="10" vAlignContent='center'>
         <div style={styles.header} >
           Settings 
         </div> 
-        <StatsToggle showStats={this.props.showStats} onShowStatsChange={this.handleStatsChange} />
+        <StatsToggle showStats={props.showStats} onShowStatsChange={props.onShowStatsChange} />
       </FlexView>
     )
-  }
 }
