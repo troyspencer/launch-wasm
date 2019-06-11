@@ -21,7 +21,7 @@ export default function Launches() {
 
     return (
         <Badge style={styles.button} count={launchCount}>
-            <Tooltip placement="right" title="Launches">
+            <Tooltip placement="bottom" title="Launches">
                 <Button style={styles.button} icon="rise" />
             </Tooltip>
         </Badge>
