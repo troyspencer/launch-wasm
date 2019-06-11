@@ -4,6 +4,9 @@ const {GenerateSW} = require('workbox-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin'); 
 const webpack = require('webpack'); // to access built-in plugins
 const path = require('path');
+const fs  = require('fs');
+const lessToJs = require('less-vars-to-js');
+const themeVariables = lessToJs(fs.readFileSync(path.join(__dirname, './components/theme.less'), 'utf8'));
 
 var config = {
   resolve: {
@@ -33,33 +36,29 @@ var config = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader"
+        loader: "babel-loader",
+        options: {
+          plugins: [
+            ['import', { libraryName: "antd", style: true }]
+          ]
         }
       },
       {
-        test: /\.css$/i,
+        test: /\.less$/,
         use: [
-          'style-loader', 
-          'css-loader'
-        ],
-      },
-      {
-        test: /\.less$/i,
-        use: [
+          {loader: 'style-loader'},
+          {loader: 'css-loader'}, 
           {
             loader: 'less-loader', // compiles Less to CSS
             options: {
-              modifyVars: {
-                'primary-color': 'red',
-                'link-color': '#1DA57A',
-                'border-radius-base': '2px',
-             },
-             javascriptEnabled: true,
+              modifyVars: themeVariables,
+              root: path.resolve(__dirname, './'),
+              javascriptEnabled: true,
            },
           }
         ],
       },
+
       {
         test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/,
         loader: 'url-loader',

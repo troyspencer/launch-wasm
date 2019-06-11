@@ -66,7 +66,7 @@ export default function Timer() {
     return (
         <Badge style={styles.button} count={elapsedTime}>
             <Tooltip placement="bottom" title="Elapsed Time">
-                <Button style={styles.button} icon="clock-circle" />
+                <Button style={styles.button} type="primary" icon="clock-circle" />
             </Tooltip>
         </Badge>
     )

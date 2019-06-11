@@ -12,6 +12,6 @@ const styles = {
 
 export default function SettingsButton(props) {
     return (
-        <Button style={styles.button} size="large" type="default" shape="circle" icon="setting" onClick={props.onClick}/>
+        <Button style={styles.button} size="large" type="primary" shape="circle" icon="setting" onClick={props.onClick}/>
     )
 }
