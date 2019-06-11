@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { Spin } from 'antd';
 import FlexView from 'react-flexview';
 
@@ -16,40 +16,26 @@ const styles = {
   }
 }
 
+export default function Game() {
+  const [loading,setLoading] = useState(true)
+  useEffect(() => {
+    const go = new Go()
+    const fetchPromise = fetch('/static/main.wasm');
+    WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
+      setLoading(false)
+      go.run(result.instance)
+    });
+  }, [])
 
-export default class Game extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      isLoading: true,
-    }
-    this.onLoadingChange = this.onLoadingChange.bind(this)
-  }
-
-  componentDidMount() {
-      const go = new Go()
-      const fetchPromise = fetch('/static/main.wasm');
-      WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
-        this.onLoadingChange(false)
-        go.run(result.instance)
-      });
-  }
-
-  onLoadingChange(isLoading) {
-    this.setState({isLoading: isLoading})
-  }
-
-  render() {
-    return (
-      <div>
-        <canvas style={styles.mycanvas} id="mycanvas" />
-        <FlexView column vAlignContent='center' hAlignContent='center' hidden={!this.state.isLoading}>
-          <FlexView vAlignContent='center' hAlignContent='center'>
-            <Spin tip="Loading..." />
-          </FlexView>
+  return (
+    <div>
+      <canvas style={styles.mycanvas} id="mycanvas" />
+      <FlexView column vAlignContent='center' hAlignContent='center' hidden={!loading}>
+        <FlexView vAlignContent='center' hAlignContent='center'>
+          <Spin tip="Loading..." />
         </FlexView>
-        
-      </div>
-    );
-  }
+      </FlexView>
+      
+    </div>
+  );
 }
