@@ -1,10 +1,10 @@
 import React from "react";
 import StatsToggle from "./statsToggle";
-import FlexView from "react-flexview";
+import { Col } from "antd";
 
 const styles = {
   header: {
-    color: "grey",
+    color: "rgb(180,180,180)",
     fontSize: "1.5em",
     textAlign: "center",
   }
@@ -12,11 +12,11 @@ const styles = {
 
 export default function SidebarContent(props) {
     return (
-      <FlexView column marginTop="10" vAlignContent='center'>
-        <div style={styles.header} >
+      <Col>
+        <div style={styles.header}>
           Settings 
         </div> 
         <StatsToggle showStats={props.showStats} onShowStatsChange={props.onShowStatsChange} />
-      </FlexView>
+      </Col>
     )
 }

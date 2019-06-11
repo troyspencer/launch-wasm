@@ -13,10 +13,10 @@
     "antd": "^3.19.2",
     "prop-types": "^15.7.2",
     "react": "^16.5.2",
+    "react-blocks": "^1.1.4",
     "react-dom": "^16.5.2",
     "react-flexview": "^4.0.3",
-    "react-sidebar": "^3.0.2",
-    "shards-react": "^1.0.3"
+    "react-sidebar": "^3.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

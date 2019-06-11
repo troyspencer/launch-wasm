@@ -1,15 +1,19 @@
 import React from 'react'
 import Launches from './launches'
 import Timer from './timer'
-import FlexView from 'react-flexview';
+import { Row, Col } from 'antd'
 
 export default function Stats(props) {
     return (
         <div hidden={!props.showStats}>
-            <FlexView vAlignContent='top'>
-                <Launches />
-                <Timer />
-            </FlexView>
+            <Row>
+                <Col span={12}>
+                    <Launches />
+                </Col>
+                <Col span={12}>
+                    <Timer />
+                </Col>
+            </Row>
         </div>
     )
 }
