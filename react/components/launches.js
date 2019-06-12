@@ -11,10 +11,11 @@ const styles = {
 export default function Launches() {
     const [launchCount,setLaunchCount] = useState(0)
     
+    const updateLaunches = (e) => setLaunchCount(e.launches)
     useEffect(() => {
-        window.document.addEventListener("updateLaunches", (e) => setLaunchCount(e.launches));
+        window.document.addEventListener("updateLaunches", updateLaunches);
         return () => {
-            window.document.removeEventListener("updateLaunches", (e) => setLaunchCount(e.launches));
+            window.document.removeEventListener("updateLaunches", updateLaunches);
         } 
     },[])
 
