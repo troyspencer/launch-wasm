@@ -11,10 +11,11 @@ export default function Overlay() {
   const [showStats, setShowStats] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
 
   const styles = {
     spin: {
-      marginTop: "50%",
+      marginTop: '20em'
     }
   }
 
@@ -31,8 +32,8 @@ export default function Overlay() {
       spinning={loading}
       style={styles.spin}
       indicator={<Icon type="loading" spin />}>
-        <Game onLoadingChange={setLoading} />
-        <FlexView hidden={loading} vAlignContent='top'>
+        <Game onLoadedChange={setLoaded} onLoadingChange={setLoading} />
+        <FlexView hidden={!loaded} vAlignContent='top'>
           <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
           <Stats showStats={showStats} />
         </FlexView>
