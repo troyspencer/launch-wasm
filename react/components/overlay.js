@@ -37,7 +37,7 @@ export default function Overlay() {
         <Game onLoadedChange={setLoaded} onLoadingChange={setLoading} />
         <FlexView hidden={!loaded || sidebarOpen} vAlignContent='top'>
           <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
-          <Stats showStats={showStats} />
+          <Stats paused={sidebarOpen} showStats={showStats} />
         </FlexView>
       </Spin>
     </Sidebar>

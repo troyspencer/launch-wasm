@@ -11,7 +11,7 @@ export default function Stats(props) {
                     <Launches />
                 </Col>
                 <Col span={12}>
-                    <Timer />
+                    <Timer paused={props.paused} />
                 </Col>
             </Row>
         </div>
