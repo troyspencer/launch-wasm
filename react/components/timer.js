@@ -57,18 +57,18 @@ export default function Timer(props) {
     }, [startTime])
 
     useEffect(() => {
-        if(props.paused) {
+        if (!props.paused) {
+            setElapsedTime(generateElapsedTime())
+        }
+    },[now])
+
+    useEffect(() => {
+        if (props.paused) {
             setPauseStartedTime(Date.now())
         } else {
             setPausedSeconds(pausedSeconds+Date.now()-pauseStartedTime)
         }
     }, [props.paused])
-
-    useEffect(() => {
-        if (!props.paused) {
-            setElapsedTime(generateElapsedTime())
-        }
-    },[now])
 
     useEffect(() => {
         window.document.addEventListener("resetTimer", handleResetTimer);

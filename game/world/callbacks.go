@@ -6,10 +6,13 @@ import (
 	"github.com/ByteArena/box2d"
 )
 
-func (worldState *WorldState) HandleEsc(this js.Value, args []js.Value) interface{} {
+func (worldState *WorldState) HandleKeys(this js.Value, args []js.Value) interface{} {
 	e := args[0]
 	if e.Get("which").Int() == 27 {
 		worldState.ResetWorld = true
+	}
+	if e.Get("which").Int() == 32 {
+		worldState.Paused = !worldState.Paused
 	}
 	return nil
 }

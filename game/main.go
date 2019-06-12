@@ -30,7 +30,7 @@ func main() {
 	defer mouseDownEvent.Release()
 	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvent)
 
-	keyUpEvent := js.FuncOf(worldState.HandleEsc)
+	keyUpEvent := js.FuncOf(worldState.HandleKeys)
 	defer keyUpEvent.Release()
 	worldState.Doc.Call("addEventListener", "keyup", keyUpEvent)
 
