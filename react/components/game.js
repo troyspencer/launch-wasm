@@ -17,10 +17,13 @@ const styles = {
 export default function Game(props) {
   useEffect(() => {
     const go = new Go()
-    const fetchPromise = fetch('/static/main.wasm');
-    WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
+    fetch('/static/main.wasm').then(response =>
+      response.arrayBuffer()
+    ).then(bytes =>
+      WebAssembly.instantiate(bytes, go.importObject)
+    ).then(results => {
       props.onLoadingChange(false)
-      go.run(result.instance)
+      go.run(results.instance)
     });
   }, [])
 
