@@ -35,7 +35,7 @@ export default function Overlay() {
       style={styles.spin}
       indicator={<Icon type="loading" spin />}>
         <Game onLoadedChange={setLoaded} onLoadingChange={setLoading} />
-        <FlexView hidden={!loaded} vAlignContent='top'>
+        <FlexView hidden={!loaded || sidebarOpen} vAlignContent='top'>
           <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
           <Stats showStats={showStats} />
         </FlexView>
