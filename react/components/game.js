@@ -16,6 +16,12 @@ const styles = {
 
 export default function Game(props) {
   useEffect(() => {
+    if (!WebAssembly.instantiateStreaming) { // polyfill
+			WebAssembly.instantiateStreaming = async (resp, importObject) => {
+				const source = await (await resp).arrayBuffer();
+				return await WebAssembly.instantiate(source, importObject);
+			};
+		}
     const go = new Go()
     const fetchPromise = fetch('/static/main.wasm');
     WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
