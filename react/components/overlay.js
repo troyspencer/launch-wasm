@@ -15,7 +15,9 @@ export default function Overlay() {
 
   const styles = {
     spin: {
-      marginTop: '20em'
+      marginTop: '20em',
+      color: 'rgb(180,180,180',
+      backgroundColor: 'black'
     }
   }
 
