@@ -11,9 +11,6 @@ func (worldState *WorldState) HandleKeys(this js.Value, args []js.Value) interfa
 	if e.Get("which").Int() == 27 {
 		worldState.ResetWorld = true
 	}
-	if e.Get("which").Int() == 32 {
-		worldState.Paused = !worldState.Paused
-	}
 	return nil
 }
 

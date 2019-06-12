@@ -33,13 +33,9 @@ export default function Overlay() {
         }
     }, [paused])
 
-    const togglePause = () => {
-        setPaused(!paused)
-    }
-
     const handleKey = (e) => {
         if (e.which == 32) {
-            togglePause()
+            setPaused(!paused)
         }
     }
 
@@ -48,13 +44,13 @@ export default function Overlay() {
         return () => {
             window.removeEventListener("keyup", handleKey);
         }
-    }, [])
+    }, [paused])
 
     useEffect(() => {
         setPaused(sidebarOpen)
     }, [sidebarOpen])
 
-    return (
+    return ( 
         <Sidebar
             sidebar={<SidebarContent showStats={showStats} onShowStatsChange={setShowStats} />}
             open={sidebarOpen}
