@@ -5,3 +5,5 @@ steps:
   - --destination=gcr.io/$PROJECT_ID/image
   - --cache=true
   - --cache-ttl=6h
+  env:
+    - 'BRANCH_NAME=$BRANCH_NAME'
