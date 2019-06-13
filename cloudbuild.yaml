@@ -1,23 +1,12 @@
 steps:
 
-- name: golang
-  id: 'buildGame'
-  env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
-  args: ['go', 'build', 'game/main.go']
-
-- name: 'ubuntu'
-  waitFor: ['buildGame']
-  id: 'copyGame'
-  args: ['bash', './copy-launch-wasm.bash']
-
-- name: 'gcr.io/cloud-builders/yarn'
-  waitFor: ['copyGame']
-  id: 'buildApp'
-  args: ['build:react']
+- name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --destination=gcr.io/$PROJECT_ID/image
+  - --cache=true
+  - --cache-ttl=6h
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  waitFor: ['buildApp']
-  id: 'deployApp'
   entrypoint: 'bash'
   args: 
     - '-c'
