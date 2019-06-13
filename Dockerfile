@@ -22,7 +22,9 @@ RUN cd react && yarn build
 
 FROM gcr.io/cloud-builders/gcloud
 WORKDIR /go/src/github.com/troyspencer/launch-wasm
+ENV BRANCH_NAME ${BRANCH_NAME}
+
 COPY server server
 COPY cloudbuild-deploy.bash cloudbuild-deploy.bash
 COPY --from=react_builder /go/src/github.com/troyspencer/launch-wasm/server/dist ./server/dist/
-RUN bash ./cloudbuild-deploy.bash
+ENTRYPOINT [ "bash", "./cloudbuild-deploy.bash" ]
