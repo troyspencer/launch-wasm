@@ -1,0 +1,1 @@
+set -e && if [[ $BRANCH_NAME == "master" ]]; then gcloud app deploy server/app.yaml; else gcloud app deploy server/app.yaml --no-promote; fi

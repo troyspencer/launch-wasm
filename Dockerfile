@@ -23,5 +23,6 @@ RUN cd react && yarn build
 FROM gcr.io/cloud-builders/gcloud
 WORKDIR /go/src/github.com/troyspencer/launch-wasm
 COPY server server
+COPY cloudbuild-deploy.bash cloudbuild-deploy.bash
 COPY --from=react_builder /go/src/github.com/troyspencer/launch-wasm/server/dist ./server/dist/
-RUN bash -c set -e && if [[ "$BRANCH_NAME" == "master" ]]; then gcloud app deploy server/app.yaml; else gcloud app deploy server/app.yaml --no-promote; fi
+RUN bash ./cloudbuild-deploy.bash
