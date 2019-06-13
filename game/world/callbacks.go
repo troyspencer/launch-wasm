@@ -6,11 +6,21 @@ import (
 	"github.com/ByteArena/box2d"
 )
 
-func (worldState *WorldState) HandleEsc(this js.Value, args []js.Value) interface{} {
+func (worldState *WorldState) HandleKeys(this js.Value, args []js.Value) interface{} {
 	e := args[0]
 	if e.Get("which").Int() == 27 {
 		worldState.ResetWorld = true
 	}
+	return nil
+}
+
+func (worldState *WorldState) HandlePause(this js.Value, args []js.Value) interface{} {
+	worldState.Paused = true
+	return nil
+}
+
+func (worldState *WorldState) HandleUnpause(this js.Value, args []js.Value) interface{} {
+	worldState.Paused = false
 	return nil
 }
 
@@ -34,11 +44,18 @@ func (worldState *WorldState) HandleClick(this js.Value, args []js.Value) interf
 }
 
 func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interface{} {
+	defer func() {
+		renderFrame := js.FuncOf(worldState.RenderFrame)
+		js.Global().Call("requestAnimationFrame", renderFrame)
+	}()
+
 	now := args[0].Float()
 	tdiff := now - worldState.TMark
 	worldState.TMark = now
-	//worldState.Doc.Call("getElementById", "launches").Set("content", fmt.Sprintf("Launches: %d", worldState.Launches))
-	//log.Println(worldState.Doc.Call("getElementById", "launches"))
+
+	if worldState.Paused {
+		return nil
+	}
 
 	worldState.World.Step(tdiff/1000*worldState.SimSpeed, 60, 120)
 
@@ -87,13 +104,6 @@ func (worldState *WorldState) RenderFrame(this js.Value, args []js.Value) interf
 		worldState.Draw(body)
 	}
 
-	renderFrame := js.FuncOf(worldState.RenderFrame)
-	js.Global().Call("requestAnimationFrame", renderFrame)
-	return nil
-}
-
-func (worldState *WorldState) HandleButton(this js.Value, args []js.Value) interface{} {
-	worldState.Launches++
 	return nil
 }
 

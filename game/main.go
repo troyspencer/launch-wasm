@@ -17,16 +17,22 @@ func main() {
 
 	worldState.World.SetContactListener(&contact.PlayerContactListener{WorldState: worldState})
 
-	// handle player clicks
-	mouseDownEvt := js.FuncOf(worldState.HandleClick)
-	defer mouseDownEvt.Release()
+	// link callbacks
+	pauseEvent := js.FuncOf(worldState.HandlePause)
+	defer pauseEvent.Release()
+	worldState.Doc.Call("addEventListener", "pause", pauseEvent)
 
-	keyUpEvt := js.FuncOf(worldState.HandleEsc)
-	defer keyUpEvt.Release()
+	unpauseEvent := js.FuncOf(worldState.HandleUnpause)
+	defer unpauseEvent.Release()
+	worldState.Doc.Call("addEventListener", "unpause", unpauseEvent)
 
-	worldState.Doc.Call("addEventListener", "keyup", keyUpEvt)
-	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvt)
-	js.Global().Call("addEventListener", "increment", js.FuncOf(worldState.HandleButton))
+	mouseDownEvent := js.FuncOf(worldState.HandleClick)
+	defer mouseDownEvent.Release()
+	worldState.Doc.Call("addEventListener", "mousedown", mouseDownEvent)
+
+	keyUpEvent := js.FuncOf(worldState.HandleKeys)
+	defer keyUpEvent.Release()
+	worldState.Doc.Call("addEventListener", "keyup", keyUpEvent)
 
 	done := make(chan struct{}, 0)
 	// Start running
