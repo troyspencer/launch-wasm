@@ -3,17 +3,20 @@ steps:
 - name: golang
   id: 'buildGame'
   env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
-  args: ['go', 'build', 'game/main.go']
-
-- name: 'ubuntu'
-  waitFor: ['buildGame']
-  id: 'copyGame'
-  args: ['bash', './copy-launch-wasm.bash']
+  dir: 'game'
+  args: ['go', 'build','-o', '../react/static/main.wasm', 'main.go']
 
 - name: 'gcr.io/cloud-builders/yarn'
-  waitFor: ['copyGame']
+  waitFor: ['-']
+  id: 'installYarnDependencies'
+  dir: 'react'
+  args: ['install']
+
+- name: 'gcr.io/cloud-builders/yarn'
+  waitFor: ['buildGame', 'installYarnDependencies']
   id: 'buildApp'
-  args: ['build:react']
+  dir: 'react'
+  args: ['build']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   waitFor: ['buildApp']

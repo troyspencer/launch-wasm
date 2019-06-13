@@ -42,6 +42,7 @@ type WorldState struct {
 	World      *box2d.B2World
 	ResetWorld bool
 	TMark      float64
+	Paused     bool
 }
 
 func Initialize() *WorldState {

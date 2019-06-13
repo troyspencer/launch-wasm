@@ -8,24 +8,24 @@ const styles = {
     }
 }
 
-export default function Timer() {
+export default function Timer(props) {
     const initialNow = Date.now()
     const [startTime,setStartTime] = useState(initialNow)
     const [now,setNow] = useState(initialNow)
     const [elapsedTime,setElapsedTime] = useState(0)
+    const [pausedSeconds,setPausedSeconds] = useState(0)
+    const [pauseStartedTime,setPauseStartedTime] = useState(initialNow)
 
     const updateNow = () => {
         setNow(Date.now())
     }
 
-    const handleResetTimer = () => {
-        const newNow = Date.now()
-        setStartTime(newNow)
-        setNow(newNow)
+    const handleResetTimer = () => { 
+        setStartTime(Date.now())
     }
 
     const generateElapsedTime = () => {
-        const cleanSeconds = Math.round((now - startTime)/1000)
+        const cleanSeconds = Math.round((now - startTime - pausedSeconds)/1000)
         
         var days   = Math.floor(cleanSeconds / 86400);
         var hours   = Math.floor((cleanSeconds - (days * 86400)) / 3600);
@@ -51,8 +51,24 @@ export default function Timer() {
     }
 
     useEffect(() => {
-        setElapsedTime(generateElapsedTime())
+        setNow(startTime)
+        setPausedSeconds(0)
+        setPauseStartedTime(startTime)
+    }, [startTime])
+
+    useEffect(() => {
+        if (!props.paused) {
+            setElapsedTime(generateElapsedTime())
+        }
     },[now])
+
+    useEffect(() => {
+        if (props.paused) {
+            setPauseStartedTime(Date.now())
+        } else {
+            setPausedSeconds(pausedSeconds+Date.now()-pauseStartedTime)
+        }
+    }, [props.paused])
 
     useEffect(() => {
         window.document.addEventListener("resetTimer", handleResetTimer);
