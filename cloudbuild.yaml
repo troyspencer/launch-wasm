@@ -7,12 +7,7 @@ steps:
   id: 'buildGame'
   env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
   dir: 'game'
-  args: ['go', 'build','-o ../react/static/main.wasm', 'main.go']
-
-- name: 'ubuntu'
-  waitFor: ['buildGame']
-  id: 'copyGame'
-  args: ['bash', './copy-launch-wasm.bash']
+  args: ['go', 'build','-o', '../react/static/main.wasm', 'main.go']
 
 - name: 'gcr.io/cloud-builders/yarn'
   waitFor: ['-']
