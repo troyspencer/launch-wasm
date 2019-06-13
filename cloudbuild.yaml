@@ -1,9 +1,6 @@
 steps:
 
 - name: golang
-  volumes:
-  - name: 'static'
-    path: '/workspace/react/static'
   id: 'buildGame'
   env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
   dir: 'game'
@@ -16,9 +13,6 @@ steps:
   args: ['install']
 
 - name: 'gcr.io/cloud-builders/yarn'
-  volumes:
-  - name: 'static'
-    path: '/workspace/react/static'
   waitFor: ['buildGame', 'installYarnDependencies']
   id: 'buildApp'
   dir: 'react'
