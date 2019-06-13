@@ -2,11 +2,12 @@ steps:
 
 - name: golang
   volumes:
-  - name: 'game'
-    path: '/workspace/game'
+  - name: 'static'
+    path: '/workspace/react/static'
   id: 'buildGame'
   env: ['GO111MODULE=on','GOOS=js','GOARCH=wasm']
-  args: ['go', 'build','-o ../react/static/main.wasm', 'game/main.go']
+  dir: 'game'
+  args: ['go', 'build','-o ../react/static/main.wasm', 'main.go']
 
 - name: 'ubuntu'
   waitFor: ['buildGame']
@@ -16,12 +17,16 @@ steps:
 - name: 'gcr.io/cloud-builders/yarn'
   waitFor: ['-']
   id: 'installYarnDependencies'
-  args: ['--cwd', 'react']
+  dir: 'react'
+  args: ['install']
 
 - name: 'gcr.io/cloud-builders/yarn'
-  waitFor: ['copyGame', 'installYarnDependencies']
+  - name: 'static'
+    path: '/workspace/react/static'
+  waitFor: ['buildGame', 'installYarnDependencies']
   id: 'buildApp'
-  args: ['--cwd', 'react', 'build']
+  dir: 'react'
+  args: ['build']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   waitFor: ['buildApp']
