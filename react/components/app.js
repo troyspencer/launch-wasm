@@ -1,10 +1,10 @@
 import React from 'react'
-import Overlay from './overlay';
+import Game from './game';
 
 export default function App() {
     return ( 
       <div className="App">
-        <Overlay />
+        <Game />
       </div>
     )
 }
