@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
 import Stats from "./stats";
-import Game from './game'
+import GameView from './gameView'
 import SidebarContent from "./sidebarContent";
 import FlexView from 'react-flexview';
 import { Spin, Icon } from 'antd';
@@ -62,7 +62,7 @@ export default function Overlay() {
                 spinning={loading}
                 style={styles.spin}
                 indicator={<Icon type="loading" spin />}>
-                <Game onLoadedChange={setLoaded} onLoadingChange={setLoading} />
+                <GameView onLoadedChange={setLoaded} onLoadingChange={setLoading} />
                 <FlexView hidden={!loaded || sidebarOpen} vAlignContent='top'>
                     <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
                     <Stats paused={paused} showStats={showStats} />

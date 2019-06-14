@@ -26,7 +26,7 @@ const styles = {
   }
 }
 
-export default function Game(props) {
+export default function GameView(props) {
   const wasmSupported = (typeof WebAssembly === "object");
   if (!wasmSupported) {
     props.onLoadingChange(false)
