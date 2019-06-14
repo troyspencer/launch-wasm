@@ -39,13 +39,20 @@ export default function Overlay() {
         }
     }
 
+    const handleRightClick = (event) => {
+        event.preventDefault();
+        setPaused(!paused)
+    };
+
     useEffect(() => {
         window.addEventListener("keyup", handleKey);
+        window.addEventListener("contextmenu", handleRightClick);
         return () => {
             window.removeEventListener("keyup", handleKey);
+            window.addEventListener("contextmenu", handleRightClick);
         }
     }, [paused])
-
+ 
     useEffect(() => {
         setPaused(sidebarOpen)
     }, [sidebarOpen])
