@@ -32,8 +32,8 @@ export default function Game() {
 
     return (
         <Overlay 
-        paused={paused} onPausedChange={setPaused}
-        loading={loading} onLoadingChange={setLoading}
-        loaded={loaded} onLoadedChange={setLoaded} />
+        paused={paused} setPaused={setPaused}
+        loading={loading} setLoading={setLoading}
+        loaded={loaded} setLoaded={setLoaded} />
     );
 }

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, { useEffect} from 'react'
 import {Button, Tooltip, Badge} from 'antd'
 
 const styles = {
@@ -8,11 +8,10 @@ const styles = {
     }
 }
 
-export default function Launches() {
-    const [launchCount,setLaunchCount] = useState(0)
+export default function Launches(props) { 
     
-    const updateLaunches = (e) => setLaunchCount(e.launches)
     useEffect(() => {
+        const updateLaunches = (e) => props.setLaunches(e.launches)
         window.document.addEventListener("updateLaunches", updateLaunches);
         return () => {
             window.document.removeEventListener("updateLaunches", updateLaunches);
@@ -20,7 +19,7 @@ export default function Launches() {
     },[])
 
     return (
-        <Badge style={styles.button} count={launchCount}>
+        <Badge style={styles.button} count={props.launches}>
             <Tooltip placement="bottom" title="Launches">
                 <Button style={styles.button} type="primary" icon="rise" />
             </Tooltip>
