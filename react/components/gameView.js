@@ -29,7 +29,7 @@ const styles = {
 export default function GameView(props) {
   const wasmSupported = (typeof WebAssembly === "object");
   if (!wasmSupported) {
-    props.onLoadingChange(false)
+    props.setLoading(false)
     return (
       <div style={styles.noWasm}>
         <Title level={2} style={styles.title}>WebAssembly is not supported on this device or browser.</Title>
@@ -41,8 +41,8 @@ export default function GameView(props) {
     const go = new Go()
     const fetchPromise = fetch('/static/main.wasm');
     WebAssembly.instantiateStreaming(fetchPromise, go.importObject).then(async (result) => {
-      props.onLoadingChange(false)
-      props.onLoadedChange(true)
+      props.setLoading(false)
+      props.setLoaded(true)
       go.run(result.instance)
     });
   }, [])

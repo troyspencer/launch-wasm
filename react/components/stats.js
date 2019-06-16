@@ -10,10 +10,10 @@ export default function Stats(props) {
         <div hidden={!props.showStats}>
             <Row>
                 <Col span={12}>
-                    <Launches launches={launches} onLaunchesChanged={setLaunches} />
+                    <Launches launches={launches} setLaunches={setLaunches} />
                 </Col>
                 <Col span={12}>
-                    <Timer launches={launches} paused={props.paused} />
+                    <Timer launches={launches} paused={props.paused} setPaused={props.setPaused} />
                 </Col>
             </Row>
         </div>

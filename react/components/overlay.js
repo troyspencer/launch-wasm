@@ -20,14 +20,14 @@ export default function Overlay(props) {
     }
 
     useEffect(() => {
-        if (props.onPausedChange) {
-            props.onPausedChange(sidebarOpen)
+        if (props.setPaused) {
+            props.setPaused(sidebarOpen)
         }
-    }, [sidebarOpen, props.onPausedChange])
+    }, [sidebarOpen, props.setPaused])
 
     return ( 
         <Sidebar
-            sidebar={<SidebarContent showStats={showStats} onShowStatsChange={setShowStats} />}
+            sidebar={<SidebarContent showStats={showStats} setShowStats={setShowStats} />}
             open={sidebarOpen}
             onSetOpen={setSidebarOpen}
             styles={{ sidebar: { background: "#464646", color: "rgb(180,180,180)", width: "10em"} }}>
@@ -38,11 +38,11 @@ export default function Overlay(props) {
                 style={styles.spin}
                 indicator={<Icon type="loading" spin />}>
                 <GameView 
-                    onLoadingChange={props.onLoadingChange}
-                    onLoadedChange={props.onLoadedChange}/>
+                    setLoading={props.setLoading}
+                    setLoaded={props.setLoaded}/>
                 <FlexView hidden={!props.loaded || sidebarOpen} vAlignContent='top'>
                     <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
-                    <Stats paused={props.paused} showStats={showStats} />
+                    <Stats paused={props.paused} showStats={showStats} setPaused={props.setPaused} />
                 </FlexView>
             </Spin>
         </Sidebar>

@@ -11,7 +11,7 @@ const styles = {
 export default function Launches(props) { 
     
     useEffect(() => {
-        const updateLaunches = (e) => props.onLaunchesChanged(e.launches)
+        const updateLaunches = (e) => props.setLaunches(e.launches)
         window.document.addEventListener("updateLaunches", updateLaunches);
         return () => {
             window.document.removeEventListener("updateLaunches", updateLaunches);
