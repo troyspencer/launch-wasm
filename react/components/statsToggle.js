@@ -10,7 +10,7 @@ export default function StatsToggle(props) {
   }
 
   return (
-    <Checkbox style={styles.checkbox} checked={props.showStats} onChange={() => props.onShowStatsChange(!props.showStats)}>
+    <Checkbox style={styles.checkbox} checked={props.showStats} onChange={() => props.setShowStats(!props.showStats)}>
       {props.showStats ? "Stats Visible" : "Stats Hidden"}
     </Checkbox>
   )

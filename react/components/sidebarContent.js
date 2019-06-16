@@ -16,7 +16,7 @@ export default function SidebarContent(props) {
         <div style={styles.header}>
           Settings 
         </div> 
-        <StatsToggle showStats={props.showStats} onShowStatsChange={props.onShowStatsChange} />
+        <StatsToggle showStats={props.showStats} setShowStats={props.setShowStats} />
       </Col>
     )
 }
