@@ -16,7 +16,8 @@
     "react-blocks": "^1.1.4",
     "react-dom": "^16.5.2",
     "react-flexview": "^4.0.3",
-    "react-sidebar": "^3.0.2"
+    "react-sidebar": "^3.0.2",
+    "use-methods": "^0.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

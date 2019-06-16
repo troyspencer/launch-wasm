@@ -2,17 +2,14 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "react-sidebar";
 import SettingsButton from "./settingsButton"
 import Stats from "./stats";
-import Game from './game'
+import GameView from './gameView'
 import SidebarContent from "./sidebarContent";
 import FlexView from 'react-flexview';
 import { Spin, Icon } from 'antd';
 
-export default function Overlay() {
+export default function Overlay(props) {
     const [showStats, setShowStats] = useState(true)
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [loaded, setLoaded] = useState(false)
-    const [paused, setPaused] = useState(false)
 
     const styles = {
         spin: {
@@ -22,50 +19,30 @@ export default function Overlay() {
         }
     }
 
-    const pauseEvent = new Event("pause")
-    const unpauseEvent = new Event("unpause")
-
     useEffect(() => {
-        if (paused) {
-            window.document.dispatchEvent(pauseEvent)
-        } else {
-            window.document.dispatchEvent(unpauseEvent)
+        if (props.setPaused) {
+            props.setPaused(sidebarOpen)
         }
-    }, [paused])
-
-    const handleKey = (e) => {
-        if (e.which == 32) {
-            setPaused(!paused)
-        }
-    }
-
-    useEffect(() => {
-        window.addEventListener("keyup", handleKey);
-        return () => {
-            window.removeEventListener("keyup", handleKey);
-        }
-    }, [paused])
-
-    useEffect(() => {
-        setPaused(sidebarOpen)
-    }, [sidebarOpen])
+    }, [sidebarOpen, props.setPaused])
 
     return ( 
         <Sidebar
-            sidebar={<SidebarContent showStats={showStats} onShowStatsChange={setShowStats} />}
+            sidebar={<SidebarContent showStats={showStats} setShowStats={setShowStats} />}
             open={sidebarOpen}
             onSetOpen={setSidebarOpen}
             styles={{ sidebar: { background: "#464646", color: "rgb(180,180,180)", width: "10em"} }}>
             <Spin 
                 tip="Loading WebAssembly..." 
                 size="large" 
-                spinning={loading}
+                spinning={props.loading}
                 style={styles.spin}
                 indicator={<Icon type="loading" spin />}>
-                <Game onLoadedChange={setLoaded} onLoadingChange={setLoading} />
-                <FlexView hidden={!loaded || sidebarOpen} vAlignContent='top'>
+                <GameView 
+                    setLoading={props.setLoading}
+                    setLoaded={props.setLoaded}/>
+                <FlexView hidden={!props.loaded || sidebarOpen} vAlignContent='top'>
                     <SettingsButton onClick={() => {setSidebarOpen(!sidebarOpen)}} />
-                    <Stats paused={paused} showStats={showStats} />
+                    <Stats paused={props.paused} showStats={showStats} setPaused={props.setPaused} />
                 </FlexView>
             </Spin>
         </Sidebar>
