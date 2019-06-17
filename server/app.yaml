@@ -1,4 +1,4 @@
-service: launch
+service: launch-wasm
 runtime: go112
 
 handlers:
